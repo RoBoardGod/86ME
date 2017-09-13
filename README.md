@@ -2,6 +2,8 @@
 ---------
 #### CHANGELOG ####
 
+roboardgod
+
 _VERSION_: v2.0
 
 * Add a new form for editing variables in "Option->Edit Variables"
