@@ -38,17 +38,19 @@
             // 
             // motionNameText
             // 
-            this.motionNameText.Location = new System.Drawing.Point(90, 7);
+            this.motionNameText.Location = new System.Drawing.Point(112, 9);
+            this.motionNameText.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.motionNameText.Name = "motionNameText";
-            this.motionNameText.Size = new System.Drawing.Size(265, 20);
+            this.motionNameText.Size = new System.Drawing.Size(330, 25);
             this.motionNameText.TabIndex = 0;
             this.motionNameText.KeyDown += new System.Windows.Forms.KeyEventHandler(this.motionNameText_KeyDown);
             // 
             // OKButton
             // 
-            this.OKButton.Location = new System.Drawing.Point(199, 68);
+            this.OKButton.Location = new System.Drawing.Point(249, 85);
+            this.OKButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.OKButton.Name = "OKButton";
-            this.OKButton.Size = new System.Drawing.Size(75, 25);
+            this.OKButton.Size = new System.Drawing.Size(94, 31);
             this.OKButton.TabIndex = 1;
             this.OKButton.Text = "OK";
             this.OKButton.UseVisualStyleBackColor = true;
@@ -56,9 +58,10 @@
             // 
             // Cancel
             // 
-            this.Cancel.Location = new System.Drawing.Point(280, 68);
+            this.Cancel.Location = new System.Drawing.Point(350, 85);
+            this.Cancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Cancel.Name = "Cancel";
-            this.Cancel.Size = new System.Drawing.Size(75, 25);
+            this.Cancel.Size = new System.Drawing.Size(94, 31);
             this.Cancel.TabIndex = 2;
             this.Cancel.Text = "Cancel";
             this.Cancel.UseVisualStyleBackColor = true;
@@ -67,9 +70,10 @@
             // motionNameLabel
             // 
             this.motionNameLabel.AutoSize = true;
-            this.motionNameLabel.Location = new System.Drawing.Point(12, 10);
+            this.motionNameLabel.Location = new System.Drawing.Point(15, 12);
+            this.motionNameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.motionNameLabel.Name = "motionNameLabel";
-            this.motionNameLabel.Size = new System.Drawing.Size(73, 13);
+            this.motionNameLabel.Size = new System.Drawing.Size(90, 15);
             this.motionNameLabel.TabIndex = 3;
             this.motionNameLabel.Text = "Motion Name:";
             // 
@@ -77,15 +81,17 @@
             // 
             this.warningLabel.AutoSize = true;
             this.warningLabel.ForeColor = System.Drawing.Color.Red;
-            this.warningLabel.Location = new System.Drawing.Point(12, 38);
+            this.warningLabel.Location = new System.Drawing.Point(15, 48);
+            this.warningLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.warningLabel.Name = "warningLabel";
-            this.warningLabel.Size = new System.Drawing.Size(0, 13);
+            this.warningLabel.Size = new System.Drawing.Size(0, 15);
             this.warningLabel.TabIndex = 4;
             // 
             // MotionName
             // 
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(367, 106);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.ClientSize = new System.Drawing.Size(459, 132);
             this.ControlBox = false;
             this.Controls.Add(this.warningLabel);
             this.Controls.Add(this.motionNameLabel);
@@ -93,6 +99,9 @@
             this.Controls.Add(this.OKButton);
             this.Controls.Add(this.motionNameText);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.MaximumSize = new System.Drawing.Size(477, 177);
+            this.MinimumSize = new System.Drawing.Size(477, 177);
             this.Name = "MotionName";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;

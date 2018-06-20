@@ -1,9 +1,44 @@
-﻿using System;
+﻿/*================================================================//
+//     __      ____   ____                                        //
+//   /'_ `\   /'___\ /\  _`\             __                       //
+//  /\ \L\ \ /\ \__/ \ \ \/\ \   __  __ /\_\     ___      ___     //
+//  \/_> _ <_\ \  _``\\ \ \ \ \ /\ \/\ \\/\ \  /' _ `\   / __`\   //
+//    /\ \L\ \\ \ \L\ \\ \ \_\ \\ \ \_\ \\ \ \ /\ \/\ \ /\ \L\ \  //
+//    \ \____/ \ \____/ \ \____/ \ \____/ \ \_\\ \_\ \_\\ \____/  //
+//     \/___/   \/___/   \/___/   \/___/   \/_/ \/_/\/_/ \/___/   //
+//                                                                //
+//                                       http://www.86duino.com   //
+//================================================================//
+ NewMotion.cs - DM&P 86ME
+ Copyright (c) 2017 Sayter <sayter@dmp.com.tw>. All right reserved.
+ Copyright (c) 2018 RoBoardGod <roboardgod@dmp.com.tw>. All right reserved.
+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License as
+ published by the Free Software Foundation; either version 2 of
+ the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+ MA  02110-1301  USA
+
+ (If you need a commercial license, please contact soc@dmp.com.tw
+  to get more information.)
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
+using System.Collections;
 
 namespace _86ME_ver2
 {
@@ -54,22 +89,26 @@ namespace _86ME_ver2
         private object serial_lock = new object();
         private bool send_msg = false;
         private bool renew_quaternion = true;
-
-        public NewMotion(Dictionary<string, string> lang_dic)
+        private int[] last_fbox = new int[45];
+        int dpi;
+        private bool develop_mode = false;
+        public NewMotion(Dictionary<string, string> lang_dic, bool dm = false)
         {
+            Graphics graphics = this.CreateGraphics();
+            dpi = (int)graphics.DpiX;
             InitializeComponent();
             NewMotion_lang_dic = lang_dic;
-            comboBox1.Items.AddRange(new object[] { "86Duino_One",
-                                                    "86Duino_Zero",
-                                                    "86Duino_EduCake",
-                                                    "86Duino_AI"
+            develop_mode = dm;
+            comboBox1.Items.AddRange(new object[] { "86Duino Zero",
+                                                    "86Duino One",
+                                                    "86Duino EduCake"
                                                     });
-            comboBox1.SelectedIndex = 0;
 
+            comboBox1.SelectedIndex = 1;
+            comboBox2.Items.Clear();
             comboBox2.Items.AddRange(new object[] { "NONE",
-                                                    "86Duino One On-Board IMU",
-                                                    "RM-G146",
-                                                    "86Duino AI On-Board IMU"
+                                                    "RoBoard RM-G146",
+                                                    "On-Board IMU"
                                                     });
             comboBox2.SelectedIndex = 0;
             maskedTextBox1.Text = (q.w).ToString();
@@ -93,12 +132,45 @@ namespace _86ME_ver2
                 p_gain[i] = 0;
                 s_gain[i] = 0;
             }
+            clear_Channels();
             create_panel(0, 45, 0);
             label10.Enabled = false;
             label11.Enabled = false;
-            applyLang();
-        }
+            channelver.HorizontalScroll.Maximum = 0;
+            channelver.AutoScroll = false;
+            channelver.VerticalScroll.Visible = false;
+            channelver.AutoScroll = true;
+            comboBox1.MouseWheel += new MouseEventHandler(comboBox_MouseWheel);
+            comboBox2.MouseWheel += new MouseEventHandler(comboBox_MouseWheel);
 
+            applyLang();
+            this.CenterToScreen();
+        }
+        public void develop_mode_change(bool dm)
+        {
+            int i = comboBox1.SelectedIndex;
+            develop_mode = dm;
+            comboBox1.Items.Clear();
+            if (develop_mode)
+            {
+                comboBox1.Items.AddRange(new object[] { "86Duino Zero",
+                                                        "86Duino One",
+                                                        "86Duino EduCake",
+                                                        "86Duino AI"
+                                                        });
+            }
+            else
+            {
+                comboBox1.Items.AddRange(new object[] { "86Duino Zero",
+                                                        "86Duino One",
+                                                        "86Duino EduCake"
+                                                        });
+            }
+            if (i < comboBox1.Items.Count)
+                comboBox1.SelectedIndex = i;
+            else
+                comboBox1.SelectedIndex = 0;
+        }
         public void start_synchronizer()
         {
             sync = new Thread(() => synchronizer());
@@ -388,10 +460,10 @@ namespace _86ME_ver2
                 sync.Abort();
                 sync = null;
             }
-            if (String.Compare(comboBox1.SelectedItem.ToString(), "86Duino_One") != 0 &&
-                String.Compare(comboBox1.SelectedItem.ToString(), "86Duino_Zero") != 0 &&
-                String.Compare(comboBox1.SelectedItem.ToString(), "86Duino_EduCake") != 0 &&
-                String.Compare(comboBox1.SelectedItem.ToString(), "86Duino_AI") != 0)
+            if (String.Compare(comboBox1.SelectedItem.ToString(), "86Duino One") != 0 &&
+                String.Compare(comboBox1.SelectedItem.ToString(), "86Duino Zero") != 0 &&
+                String.Compare(comboBox1.SelectedItem.ToString(), "86Duino EduCake") != 0 &&
+                String.Compare(comboBox1.SelectedItem.ToString(), "86Duino AI") != 0)
                 MessageBox.Show(NewMotion_lang_dic["NewMotion_err1"]);
             else
                 this.DialogResult = DialogResult.OK;
@@ -408,8 +480,13 @@ namespace _86ME_ver2
             {
                 if (fpanel[i] != null)
                 {
-                    fbox[i].SelectedIndex = 0;
+                    //fbox[i].SelectedIndex = 0;
+                    last_fbox[i] = fbox[i].SelectedIndex;
                     fpanel[i].Controls.Clear();
+                }
+                else
+                {
+                    last_fbox[i] = 0;
                 }
             }
             channelver.Controls.Clear();
@@ -417,32 +494,52 @@ namespace _86ME_ver2
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (last_index == comboBox1.SelectedIndex)
-            {
-            }
-            else if (string.Compare(comboBox1.Text, "86Duino_One") == 0)
+            MessageBox.Show(comboBox1.Text);
+            if (string.Compare(comboBox1.Text, "86Duino One") == 0)
             {
                 clear_Channels();
                 create_panel(0, 45, 0);
             }
-            else if (string.Compare(comboBox1.Text, "86Duino_Zero") == 0)
+            else if (string.Compare(comboBox1.Text, "86Duino Zero") == 0)
             {
                 clear_Channels();
                 create_panel(0, 14, 0);
                 create_panel(42, 45, 14);
             }
-            else if (string.Compare(comboBox1.Text, "86Duino_EduCake") == 0)
+            else if (string.Compare(comboBox1.Text, "86Duino EduCake") == 0)
             {
                 clear_Channels();
                 create_panel(0, 21, 0);
                 create_panel(31, 33, 21);
                 create_panel(42, 45, 23);
             }
-            else if (string.Compare(comboBox1.Text, "86Duino_AI") == 0)
+            else if (string.Compare(comboBox1.Text, "86Duino AI") == 0)
             {
                 clear_Channels();
                 create_panel(0, 36, 0);
             }
+
+            int m = comboBox2.SelectedIndex;
+            if (string.Compare(comboBox1.SelectedItem.ToString(), "86Duino One") == 0 || string.Compare(comboBox1.SelectedItem.ToString(), "86Duino AI") == 0)
+            {
+
+                comboBox2.Items.Clear();
+                comboBox2.Items.AddRange(new object[] { "NONE",
+                                                        "RoBoard RM-G146",
+                                                        "On-Board IMU"
+                                                        });
+            }
+            else
+            {
+                comboBox2.Items.Clear();
+                comboBox2.Items.AddRange(new object[] { "NONE",
+                                                        "RoBoard RM-G146"
+                                                        });
+            }
+            if (m < comboBox2.Items.Count)
+                comboBox2.SelectedIndex = m;
+            else
+                comboBox2.SelectedIndex = 0;
         }
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
@@ -471,6 +568,7 @@ namespace _86ME_ver2
             if (((CheckBox)sender).Checked == true)
             {
                 ((CheckBox)sender).Image = Properties.Resources.s;
+                ((CheckBox)sender).BackColor = System.Drawing.SystemColors.Control;
                 ftext5[index].Visible = false;
                 fbox2[index].Visible = false;
                 ftext6[index].Visible = true;
@@ -479,6 +577,7 @@ namespace _86ME_ver2
             else
             {
                 ((CheckBox)sender).Image = Properties.Resources.p;
+                ((CheckBox)sender).BackColor = System.Drawing.SystemColors.Control;
                 ftext6[index].Visible = false;
                 fbox3[index].Visible = false;
                 ftext5[index].Visible = true;
@@ -502,7 +601,7 @@ namespace _86ME_ver2
                 s_gain[i] = double.Parse(ftext6[i].Text);
             }
         }
-
+        
         public void create_panel(int low, int high, int start_pos)
         {
             for (int i = low; i < high; i++, start_pos++)
@@ -513,10 +612,10 @@ namespace _86ME_ver2
                 fbox[i] = new ComboBox();
                 fbox2[i] = new ComboBox();
                 fbox3[i] = new ComboBox();
-                ftext[i] = new MaskedTextBox();
-                ftext2[i] = new MaskedTextBox();
-                ftext3[i] = new MaskedTextBox();
-                ftext4[i] = new MaskedTextBox();
+                ftext[i] = new MaskedTextBox();     //offset
+                ftext2[i] = new MaskedTextBox();    //home
+                ftext3[i] = new MaskedTextBox();    //Max
+                ftext4[i] = new MaskedTextBox();    //min
                 ftext5[i] = new MaskedTextBox();
                 ftext6[i] = new MaskedTextBox();
                 fcheck[i] = new CheckBox();
@@ -524,33 +623,33 @@ namespace _86ME_ver2
                 fbar_off[i] = new HScrollBar();
                 fbar_home[i] = new HScrollBar();
 
-                fpanel[i].Size = new Size(685, 50);
-                fpanel[i].Top += 3 + start_pos * 50;
+                fpanel[i].Size = new Size(685 * dpi / 96, 50 * dpi / 96);
+                fpanel[i].Top += (3 + start_pos * 50) * dpi / 96;
 
-                flabel[i].Size = new Size(65, 18);
-                flabel[i].Top += 5;
-                flabel[i].Left += 5;
+                flabel[i].Size = new Size(65 * dpi / 96, 18 * dpi / 96);
+                flabel[i].Top += 5 * dpi / 96;
+                flabel[i].Left += 5 * dpi / 96;
 
-                flabel2[i].Size = new Size(2, 47);
-                flabel2[i].Left += 534;
+                flabel2[i].Size = new Size(2 * dpi / 96, 47 * dpi / 96);
+                flabel2[i].Left += 534 * dpi / 96;
                 flabel2[i].BorderStyle = BorderStyle.FixedSingle;
 
                 fbox[i].DropDownStyle = ComboBoxStyle.DropDownList;
-                fbox[i].Size = new Size(135, 22);
-                fbox[i].Left += 70;
+                fbox[i].Size = new Size(135 * dpi / 96, 22 * dpi / 96);
+                fbox[i].Left += 70 * dpi / 96;
 
                 fbox2[i].DropDownStyle = ComboBoxStyle.DropDownList;
-                fbox2[i].Size = new Size(50, 22);
-                fbox2[i].Left += 580;
+                fbox2[i].Size = new Size(50 * dpi / 96, 22 * dpi / 96);
+                fbox2[i].Left += 580 * dpi / 96;
 
                 fbox3[i].DropDownStyle = ComboBoxStyle.DropDownList;
-                fbox3[i].Size = new Size(50, 22);
-                fbox3[i].Left += 580;
-                fbox3[i].Top += 6;
+                fbox3[i].Size = new Size(50 * dpi / 96, 22 * dpi / 96);
+                fbox3[i].Left += 580 * dpi / 96;
+                fbox3[i].Top += 6 * dpi / 96;
 
-                fcheck[i].Top += 24;
-                fcheck[i].Left += 125;
-                fcheck[i].Size = new Size(75, 22);
+                fcheck[i].Top += 21 * dpi / 96;
+                fcheck[i].Left += 155 * dpi / 96;
+                fcheck[i].Size = new Size(50 * dpi / 96, 22 * dpi / 96);
                 fcheck[i].Text = NewMotion_lang_dic["NewMotion_fcheckText"];
                 fcheck[i].Name = i.ToString();
                 fcheck[i].Checked = false;
@@ -562,8 +661,9 @@ namespace _86ME_ver2
                 fcheck_ps[i].FlatAppearance.BorderSize = 0;
                 fcheck_ps[i].Image = Properties.Resources.p;
                 fcheck_ps[i].BackgroundImageLayout = ImageLayout.Center;
-                fcheck_ps[i].Size = new Size(23, 22);
-                fcheck_ps[i].Left += 552;
+                fcheck_ps[i].BackColor = System.Drawing.SystemColors.Control;
+                fcheck_ps[i].Size = new Size(23 * dpi / 96, 22 * dpi / 96);
+                fcheck_ps[i].Left += 552 * dpi / 96;
                 fcheck_ps[i].Name = i.ToString();
                 fcheck_ps[i].Enabled = false;
                 fcheck_ps[i].CheckedChanged += new EventHandler(fcheck_ps_CheckedChanged);
@@ -573,24 +673,24 @@ namespace _86ME_ver2
                 ftext[i].TextAlign = HorizontalAlignment.Right;
                 ftext[i].KeyPress += new KeyPressEventHandler(numbercheck_offset);
                 ftext[i].TextChanged += new EventHandler(check_offset);
-                ftext[i].Size = new Size(90, 22);
-                ftext[i].Left += 210;
+                ftext[i].Size = new Size(90 * dpi / 96, 22 * dpi / 96);
+                ftext[i].Left += 425 * dpi / 96;
 
                 ftext2[i].Name = i.ToString();
                 ftext2[i].Text = homeframe[i].ToString();
                 ftext2[i].TextAlign = HorizontalAlignment.Right;
                 ftext2[i].KeyPress += new KeyPressEventHandler(numbercheck);
                 ftext2[i].TextChanged += new EventHandler(check_homeframe);
-                ftext2[i].Size = new Size(120, 22);
-                ftext2[i].Left += 305;
+                ftext2[i].Size = new Size(120 * dpi / 96, 22 * dpi / 96);
+                ftext2[i].Left += 210 * dpi / 96;
 
                 ftext3[i].Name = i.ToString();
                 ftext3[i].Text = min[i].ToString();
                 ftext3[i].TextAlign = HorizontalAlignment.Right;
                 ftext3[i].KeyPress += new KeyPressEventHandler(numbercheck);
                 ftext3[i].TextChanged += new EventHandler(check_range);
-                ftext3[i].Size = new Size(40, 22);
-                ftext3[i].Left += 430;
+                ftext3[i].Size = new Size(40 * dpi / 96, 22 * dpi / 96);
+                ftext3[i].Left += 335 * dpi / 96;
                 ftext3[i].Enabled = false;
 
                 ftext4[i].Name = i.ToString();
@@ -598,8 +698,8 @@ namespace _86ME_ver2
                 ftext4[i].TextAlign = HorizontalAlignment.Right;
                 ftext4[i].KeyPress += new KeyPressEventHandler(numbercheck);
                 ftext4[i].TextChanged += new EventHandler(check_range);
-                ftext4[i].Size = new Size(40, 22);
-                ftext4[i].Left += 475;
+                ftext4[i].Size = new Size(40 * dpi / 96, 22 * dpi / 96);
+                ftext4[i].Left += 375 * dpi / 96;
                 ftext4[i].Enabled = false;
 
                 ftext5[i].Name = i.ToString();
@@ -607,8 +707,8 @@ namespace _86ME_ver2
                 ftext5[i].TextAlign = HorizontalAlignment.Right;
                 ftext5[i].KeyPress += new KeyPressEventHandler(floatcheck);
                 ftext5[i].TextChanged += new EventHandler(check_pgain);
-                ftext5[i].Size = new Size(40, 22);
-                ftext5[i].Left += 635;
+                ftext5[i].Size = new Size(40 * dpi / 96, 22 * dpi / 96);
+                ftext5[i].Left += 635 * dpi / 96;
                 ftext5[i].Enabled = false;
 
                 ftext6[i].Name = i.ToString();
@@ -616,54 +716,55 @@ namespace _86ME_ver2
                 ftext6[i].TextAlign = HorizontalAlignment.Right;
                 ftext6[i].KeyPress += new KeyPressEventHandler(floatcheck);
                 ftext6[i].TextChanged += new EventHandler(check_sgain);
-                ftext6[i].Size = new Size(40, 22);
-                ftext6[i].Left += 635;
-                ftext6[i].Top += 6;
+                ftext6[i].Size = new Size(40 * dpi / 96, 22 * dpi / 96);
+                ftext6[i].Left += 635 * dpi / 96;
+                ftext6[i].Top += 6 * dpi / 96;
                 ftext6[i].Enabled = false;
                 ftext6[i].Visible = false;
 
                 fbar_off[i].Name = i.ToString();
-                fbar_off[i].Top += 24;
-                fbar_off[i].Left += 210;
-                fbar_off[i].Size = new Size(90, 22);
+                fbar_off[i].Top += 21 * dpi / 96;
+                fbar_off[i].Left += 425 * dpi / 96;
+                fbar_off[i].Size = new Size(90 * dpi / 96, 22 * dpi / 96);
                 fbar_off[i].Minimum = -256;
                 fbar_off[i].Maximum = 255 + 9;
                 fbar_off[i].Value = int.Parse(ftext[i].Text);
                 fbar_off[i].Scroll += new ScrollEventHandler(scroll_off);
 
                 fbar_home[i].Name = i.ToString();
-                fbar_home[i].Top += 24;
-                fbar_home[i].Left += 305;
-                fbar_home[i].Size = new Size(120, 22);
+                fbar_home[i].Top += 21 * dpi / 96;
+                fbar_home[i].Left += 210 * dpi / 96;
+                fbar_home[i].Size = new Size(120 * dpi / 96, 22 * dpi / 96);
                 fbar_home[i].Minimum = int.Parse(ftext3[i].Text);
                 fbar_home[i].Maximum = int.Parse(ftext4[i].Text) + 9;
                 fbar_home[i].Value = int.Parse(ftext2[i].Text);
                 fbar_home[i].Scroll += new ScrollEventHandler(scroll_home);
 
                 fbox[i].Items.AddRange(new object[] { "---noServo---",
+                                                      "DMP_RS0263",
+                                                      "DMP_RS1270",
                                                       "EMAX_ES08AII",
                                                       "EMAX_ES3104",
+                                                      "FUTABA_S3003",
+                                                      "GWS_S03T",
+                                                      "GWS_S777",
+                                                      "GWS_MICRO",
+                                                      "HITEC_HSR8498",
+                                                      "KONDO_KRS4014",
+                                                      "KONDO_KRS4024",
                                                       "KONDO_KRS786",
                                                       "KONDO_KRS788",
                                                       "KONDO_KRS78X",
-                                                      "KONDO_KRS4014",
-                                                      "KONDO_KRS4024",
-                                                      "HITEC_HSR8498",
-                                                      "FUTABA_S3003",
                                                       "SHAYYE_SYS214050",
+                                                      "TOWERPRO_SG90",
                                                       "TOWERPRO_MG90S",
                                                       "TOWERPRO_MG995",
                                                       "TOWERPRO_MG996",
-                                                      "TOWERPRO_SG90",
-                                                      "DMP_RS0263",
-                                                      "DMP_RS1270",
-                                                      "GWS_S777",
-                                                      "GWS_S03T",
-                                                      "GWS_MICRO",
                                                       "OtherServos"});
                 fbox[i].SelectedIndex = 0;
                 fbox[i].Name = i.ToString();
                 fbox[i].SelectedIndexChanged += new EventHandler(motors_SelectedIndexChanged);
+                fbox[i].MouseWheel += new MouseEventHandler(comboBox_MouseWheel);
 
                 fbox2[i].Items.AddRange(new object[] { "none", "roll", "pitch", "v_roll", "v_pitch" });
                 fbox2[i].SelectedIndex = 0;
@@ -697,8 +798,103 @@ namespace _86ME_ver2
                 fpanel[i].Controls.Add(fbar_home[i]);
                 fpanel[i].Controls.Add(fcheck_ps[i]);
                 channelver.Controls.Add(fpanel[i]);
+                fbox[i].SelectedIndex = last_fbox[i];
             }
+
         }
+        static void Swap<T>(ref T lhs, ref T rhs)
+        {
+            T temp;
+            temp = lhs;
+            lhs = rhs;
+            rhs = temp;
+        }
+        public void swap_config(int source, int target)
+        {
+            String swap_s;
+            int swap_i;
+            bool swap_b;
+
+
+            swap_s = ftext[source].Text;
+            ftext[source].Text = ftext[target].Text;
+            ftext[target].Text = swap_s;
+
+            swap_s = ftext2[source].Text;
+            ftext2[source].Text = ftext2[target].Text;
+            ftext2[target].Text = swap_s;
+
+            swap_s = ftext3[source].Text;
+            ftext3[source].Text = ftext3[target].Text;
+            ftext3[target].Text = swap_s;
+            swap_b = ftext3[source].Enabled;
+            ftext3[source].Enabled = ftext3[target].Enabled;
+            ftext3[target].Enabled = swap_b;
+
+
+            swap_s = ftext4[source].Text;
+            ftext4[source].Text = ftext4[target].Text;
+            ftext4[target].Text = swap_s;
+            swap_b = ftext4[source].Enabled;
+            ftext4[source].Enabled = ftext4[target].Enabled;
+            ftext4[target].Enabled = swap_b;
+
+            swap_s = ftext5[source].Text;
+            ftext5[source].Text = ftext5[target].Text;
+            ftext5[target].Text = swap_s;
+            swap_b = ftext5[source].Enabled;
+            ftext5[source].Enabled = ftext5[target].Enabled;
+            ftext5[target].Enabled = swap_b;
+
+            swap_s = ftext6[source].Text;
+            ftext6[source].Text = ftext6[target].Text;
+            ftext6[target].Text = swap_s;
+            swap_b = ftext6[source].Enabled;
+            ftext6[source].Enabled = ftext6[target].Enabled;
+            ftext6[target].Enabled = swap_b;
+            swap_b = ftext6[source].Visible;
+            ftext6[source].Visible = ftext6[target].Visible;
+            ftext6[target].Visible = swap_b;
+
+            swap_i = fbar_off[source].Value;
+            fbar_off[source].Value = fbar_off[target].Value;
+            fbar_off[target].Value = swap_i;
+
+
+            swap_i = fbar_home[source].Minimum;
+            fbar_home[source].Minimum = fbar_home[target].Minimum;
+            fbar_home[target].Minimum = swap_i;
+            swap_i = fbar_home[source].Maximum;
+            fbar_home[source].Maximum = fbar_home[target].Maximum;
+            fbar_home[target].Maximum = swap_i;
+            swap_i = fbar_home[source].Value;
+            fbar_home[source].Value = fbar_home[target].Value;
+            fbar_home[target].Value = swap_i;
+
+            swap_i = fbox[source].SelectedIndex;
+            fbox[source].SelectedIndex = fbox[target].SelectedIndex;
+            fbox[target].SelectedIndex = swap_i;
+
+            swap_i = fbox2[source].SelectedIndex;
+            fbox2[source].SelectedIndex = fbox2[target].SelectedIndex;
+            fbox2[target].SelectedIndex = swap_i;
+            swap_b = fbox2[source].Enabled;
+            fbox2[source].Enabled = fbox2[target].Enabled;
+            fbox2[target].Enabled = swap_b;
+
+            swap_i = fbox3[source].SelectedIndex;
+            fbox3[source].SelectedIndex = fbox3[target].SelectedIndex;
+            fbox3[target].SelectedIndex = swap_i;
+            swap_b = fbox3[source].Enabled;
+            fbox3[source].Enabled = fbox3[target].Enabled;
+            fbox3[target].Enabled = swap_b;
+            swap_b = fbox3[source].Visible;
+            fbox3[source].Visible = fbox3[target].Visible;
+            fbox3[target].Visible = swap_b;
+
+
+        }
+
 
         public void scroll_off(object sender, ScrollEventArgs e)
         {
@@ -1015,7 +1211,17 @@ namespace _86ME_ver2
             {
                 try
                 {
-                    arduino.init_IMU(comboBox2.SelectedIndex);
+                    if (string.Compare(comboBox2.SelectedItem.ToString(), "On-Board IMU") == 0)
+                    {
+                        if (string.Compare(comboBox1.SelectedItem.ToString(), "86Duino One") == 0)
+                            arduino.init_IMU(1);
+                        else if (string.Compare(comboBox1.SelectedItem.ToString(), "86Duino AI") == 0)
+                            arduino.init_IMU(3);
+                    }
+                    else if (string.Compare(comboBox2.SelectedItem.ToString(), "RoBoard RM-G146") == 0)
+                        arduino.init_IMU(2);
+                    else
+                        arduino.init_IMU(0);
                     show_progress.Start();
                 }
                 catch
@@ -1112,6 +1318,19 @@ namespace _86ME_ver2
                 }
                 arduino.dataRecieved = false;
             }
+        }
+
+        private void comboBox1_SelectedIndexChanged_1(object sender, EventArgs e)
+        {
+        }
+        void comboBox_MouseWheel(object sender, MouseEventArgs e)
+        {
+            ((HandledMouseEventArgs)e).Handled = true;
+        }
+
+        private void channelver_MouseEnter(object sender, EventArgs e)
+        {
+            channelver.Focus();
         }
     }
 }

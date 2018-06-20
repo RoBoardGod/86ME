@@ -28,7 +28,6 @@ import logging
 import datetime
 import ConfigParser
 
-
 class ScratchCommandHandlers:
     """
     This class processes any command received from Scratch 2.0
@@ -53,7 +52,9 @@ class ScratchCommandHandlers:
     ln_SONAR = config.get('translation_lists', 'ln_SONAR').split(',')
     ln_OFF = config.get('translation_lists', 'ln_OFF').split(',')
     ln_ON = config.get('translation_lists', 'ln_ON').split(',')
-
+    ln_DELAY = config.get('translation_lists', 'ln_DELAY').split(',')
+    ln_VELOCITY = config.get('translation_lists', 'ln_VELOCITY').split(',')
+    
     # pin counts for the board
     total_pins_discovered = 0
     number_of_analog_pins_discovered = 0
@@ -61,6 +62,7 @@ class ScratchCommandHandlers:
     # lists to keep track of which pins need to be included in the poll responses
     digital_poll_list = []
     analog_poll_list = []
+    encoder_poll_list = []
 
     # detected pin capability map
     pin_map = {}
@@ -70,14 +72,23 @@ class ScratchCommandHandlers:
 
     # debug state - 0 == off and 1 == on
     debug = 0
-
-    motion_busy_ID = []
+    
+    imu_busy = 0
+    imu_busy_ID = 0
+    imu_active = 0
+    
+    one_servo_busy = 0
+    one_servo_is_moving = 0
+    one_servo_busy_ID = 0
 
     # base report string to be modified in response to a poll command
     # PIN and VALUE will be replaced with pin number and the current value for the pin
     digital_reporter_base = 'digital_read/PIN VALUE'
     analog_reporter_base = 'analog_read/PIN VALUE'
-    perform_motion_reporter_base = '_busy ID'
+    encoder_reporter_base = 'read_encoder_count/MODULE VALUE'
+    imu_response_base = 'read_imu/TYPE VALUE'
+    imu_init_response_base = '_busy ID'
+    one_servo_response_base = '_busy ID'
 
     # convenience definition for cr + lf
     end_of_line = "\r\n"
@@ -115,6 +126,12 @@ class ScratchCommandHandlers:
             return 'Tone'
         if command in self.ln_SONAR:
             return 'SONAR'
+    
+    def check_CMD_SERVO_MODE(self, command):
+        if command in self.ln_DELAY:
+            return 'Delay'
+        if command in self.ln_VELOCITY:
+            return 'Velocity'
 
     # noinspection PyPep8Naming
     def check_DEBUG(self, command):
@@ -146,6 +163,8 @@ class ScratchCommandHandlers:
         for x in range(self.number_of_analog_pins_discovered):
             self.analog_poll_list.append(self.firmata.IGNORE)
 
+        for x in range(4):
+            self.encoder_poll_list.append(self.firmata.IGNORE)
     def do_command(self, command):
         """
         This method looks up the command that resides in element zero of the command list
@@ -178,17 +197,23 @@ class ScratchCommandHandlers:
         @param command: This is a list containing the Scratch command and all its parameters It is unsused
         @return: 'okay'
         """
+        import s2a_fm
+        
         if not self.first_poll_received:
             logging.info('Scratch detected! Ready to rock and roll...')
             print 'Scratch detected! Ready to rock and roll...'
             self.first_poll_received = True
+            self.firmata.set_s2a_fm_status(10)
 
         # assemble all output pin reports
 
         # first get the current digital and analog pin values from firmata
         digital_response_table = self.firmata.get_digital_response_table()
         analog_response_table = self.firmata.get_analog_response_table()
-        perform_motion_response_table = self.firmata.get_perform_motion_response_table()
+        encoder_response_table = self.firmata.get_encoder_response_table()
+        imu_response_table = self.firmata.get_imu_response_table()
+        imu_init_response_table = self.firmata.get_imu_init_response_table()
+        one_servo_response_table = self.firmata.get_one_servo_response_table()
         
         # for each pin in the poll list that is set as an INPUT,
         # retrieve the pins value from the response table and build the response
@@ -218,25 +243,64 @@ class ScratchCommandHandlers:
                 report_entry = report_entry.replace("VALUE", value)
                 responses += report_entry
                 responses += self.end_of_line
+        
+        for module in range(4):
+            if self.encoder_poll_list[module] == self.firmata.ENCODER:
+                module_number = str(module)
+                value = str(encoder_response_table[module][1])
+                report_entry = self.encoder_reporter_base
+                report_entry = report_entry.replace("MODULE", module_number)
+                report_entry = report_entry.replace("VALUE", value)
+                responses += report_entry
+                responses += self.end_of_line
 
-        if self.motion_busy_ID:
-            ids = ''
-            for i, id in enumerate(self.motion_busy_ID):
-                if id in perform_motion_response_table:
-                    if perform_motion_response_table[id] != 99:
-                        ids += str(id) + ' '
-                    else:
-                        self.motion_busy_ID.remove(id)
-                        perform_motion_response_table[id] = 0
-                else:
-                    ids += str(id) + ' '
-            report_entry = self.perform_motion_reporter_base
-            report_entry = report_entry.replace("ID", ids)
-            responses += report_entry
+        # for 86Duino Servo86
+        if self.one_servo_is_moving == 1:
+            if one_servo_response_table[0] != 99:
+                id = str(self.one_servo_busy_ID)
+                report_entry = self.one_servo_response_base
+                report_entry = report_entry.replace("ID", id)
+                responses += report_entry
+                responses += self.end_of_line
+            else:
+                self.one_servo_busy = 0
+                one_servo_response_table[0] = 0
+                self.one_servo_is_moving = 0
+
+        # for 86Duino FreeIMU1
+        if self.imu_active == 1:
+            type = 'pitch'
+            val = str(imu_response_table[0])
+            report_entry_0 = self.imu_response_base
+            report_entry_0 = report_entry_0.replace("TYPE", type)
+            report_entry_0 = report_entry_0.replace("VALUE", val)
+            responses += report_entry_0
             responses += self.end_of_line
+            
+            type = 'roll'
+            val = str(imu_response_table[1])
+            report_entry_1 = self.imu_response_base
+            report_entry_1 = report_entry_1.replace("TYPE", type)
+            report_entry_1 = report_entry_1.replace("VALUE", val)
+            responses += report_entry_1
+            responses += self.end_of_line
+            
+        
+        if self.imu_busy == 1:
+            if imu_init_response_table[1] != 99:
+                id = str(self.imu_busy_ID)
+                report_entry = self.imu_init_response_base
+                report_entry = report_entry.replace("ID", id)
+                responses += report_entry
+                responses += self.end_of_line
+            else:
+                self.imu_busy = 0
+                imu_init_response_table[1] = 0
+                self.imu_active = 1
         
         if responses == '':
             responses = 'okay'
+
         return responses
 
     #noinspection PyUnusedLocal
@@ -261,14 +325,21 @@ class ScratchCommandHandlers:
         @param command: Command and all possible parameters in list form
         @return: 'okay'
         """
+        
         # reset the tables
         for x in range(self.total_pins_discovered):
             self.digital_poll_list[x] = self.firmata.IGNORE
 
         for x in range(self.number_of_analog_pins_discovered):
             self.analog_poll_list[x] = self.firmata.IGNORE
+            
+        for x in range(4):
+            self.encoder_poll_list[x] = self.firmata.IGNORE
+        
         self.firmata.reset()
         self.debug = 0
+        self.imu_active = 0
+        
         return 'okay'
 
     def digital_pin_mode(self, command):
@@ -506,6 +577,57 @@ class ScratchCommandHandlers:
             logging.debug('analog_write: Pin %d must be enabled before writing to it.' % pin)
             return '_problem Pin must be enabled before writing to it.'
 
+    def play_tone(self, command):
+        # check to make sure pin was configured for tone
+        """
+        This method will play a tone for the specified pin in command
+        @param command: Command and all possible parameters in list form
+        @return: okay or _problem
+        """
+
+        if not command[self.CMD_PIN].isdigit():
+            logging.debug('play_tome: The pin number must be set to a numerical value')
+            print 'play_tone: The pin number must be set to a numerical value'
+            return 'okay'
+
+        pin = int(command[self.CMD_PIN])
+
+        if self.digital_poll_list[pin] == self.firmata.TONE_TONE:
+            #noinspection PyUnusedLocal
+            value = command[1]
+            self.firmata.play_tone(pin, self.firmata.TONE_TONE, int(command[self.CMD_TONE_FREQ]),
+                                   int(command[self.CMD_TONE_DURATION]))
+            return 'okay'
+        else:
+            print 'play_tone: Pin %d was not enabled as TONE.' % pin
+            logging.debug('play_tone: Pin %d was not enabled as TONE.' % pin)
+            return 'okay'
+
+    def tone_off(self, command):
+       # check to make sure pin was configured for tone
+        """
+        This method will force tone to be off.
+        @param command: Command and all possible parameters in list form
+        @return: okay
+        """
+
+        if not command[self.CMD_PIN].isdigit():
+            logging.debug('tone_off: The pin number must be set to a numerical value')
+            print 'tone_off: The pin number must be set to a numerical value'
+            return 'okay'
+
+        pin = int(command[self.CMD_PIN])
+
+        if self.digital_poll_list[pin] == self.firmata.TONE_TONE:
+            #noinspection PyUnusedLocal
+            value = command[1]
+            self.firmata.play_tone(pin, self.firmata.TONE_NO_TONE, 0, 0)  
+            return 'okay'
+        else:
+            print 'tone_off: Pin %d was not enabled as TONE.' % pin
+            logging.debug('tone_off: Pin %d was not enabled as TONE.' % pin)
+            return 'okay'
+
     def debug_control(self, command):
         """
         This method controls command block debug logging
@@ -576,8 +698,135 @@ class ScratchCommandHandlers:
             report_entry = value
             report_entry += self.end_of_line
             return report_entry
+
+    def set_encoder_mode(self, command):
+        """
+        This method is added for 86Duino Encoder library.
+        """
         
-    # Define functions to perform motions here
+        if self.check_CMD_ENABLE_DISABLE(command[self.CMD_ENABLE_DISABLE]) == 'Enable':
+            
+            module = int(command[2])
+            
+            if module == 0:
+                self.digital_poll_list[42] = self.firmata.ENCODER
+                self.digital_poll_list[43] = self.firmata.ENCODER
+                self.digital_poll_list[44] = self.firmata.ENCODER
+            elif module == 1:
+                self.digital_poll_list[18] = self.firmata.ENCODER
+                self.digital_poll_list[19] = self.firmata.ENCODER
+                self.digital_poll_list[20] = self.firmata.ENCODER
+            elif module == 2:
+                self.digital_poll_list[33] = self.firmata.ENCODER
+                self.digital_poll_list[34] = self.firmata.ENCODER
+                self.digital_poll_list[35] = self.firmata.ENCODER
+            elif module == 3:
+                self.digital_poll_list[36] = self.firmata.ENCODER
+                self.digital_poll_list[37] = self.firmata.ENCODER
+                self.digital_poll_list[38] = self.firmata.ENCODER
+                
+            mode = command[3]
+            encoder_mode = 0
+            
+            if mode == 'Pulse%2FDIR':
+                encoder_mode = 0
+            elif mode == 'CW%2FCCW':
+                encoder_mode = 1
+            elif mode == 'Pulse%20A%2FB':
+                encoder_mode = 2
+            
+            self.encoder_poll_list[module] = self.firmata.ENCODER
+            self.firmata.set_encoder_mode(1, module, encoder_mode)
+        
+        if self.check_CMD_ENABLE_DISABLE(command[self.CMD_ENABLE_DISABLE]) == 'Disable':
+            module = int(command[2])
+            
+            if module == 0:
+                self.digital_poll_list[42] = self.firmata.IGNORE
+                self.digital_poll_list[43] = self.firmata.IGNORE
+                self.digital_poll_list[44] = self.firmata.IGNORE
+            elif module == 1:
+                self.digital_poll_list[18] = self.firmata.IGNORE
+                self.digital_poll_list[19] = self.firmata.IGNORE
+                self.digital_poll_list[20] = self.firmata.IGNORE
+            elif module == 2:
+                self.digital_poll_list[33] = self.firmata.IGNORE
+                self.digital_poll_list[34] = self.firmata.IGNORE
+                self.digital_poll_list[35] = self.firmata.IGNORE
+            elif module == 3:
+                self.digital_poll_list[36] = self.firmata.IGNORE
+                self.digital_poll_list[37] = self.firmata.IGNORE
+                self.digital_poll_list[38] = self.firmata.IGNORE
+            
+            self.encoder_poll_list[module] = self.firmata.IGNORE
+            self.firmata.set_encoder_mode(0, 0, 0)
+        
+        return 'okay'
+        
+    def move_one_servo_ex(self, command):
+        """
+        This method is added for 86Duino Servo library.
+        """
+        mode = 0
+        id = int(command[1])
+        pin = int(command[2])
+        angle = int(command[3])
+        if self.check_CMD_SERVO_MODE(command[4]) == 'Delay':
+            mode = 0
+        elif self.check_CMD_SERVO_MODE(command[4]) == 'Velocity':
+            mode = 1
+        msec_velocity = int(command[5])
+        
+        self.firmata.move_one_servo_ex(pin, angle, mode, msec_velocity)
+        
+        self.one_servo_is_moving = 1
+        self.one_servo_busy_ID = id
+        
+        return 'okay'
+        
+    def config_servo_ex(self, command):
+        """
+        This method is added for 86Duino Servo library.
+        """
+        
+        mode = 0
+        pin = int(command[1])
+        angle = int(command[2])
+        if self.check_CMD_SERVO_MODE(command[3]) == 'Delay':
+            mode = 0
+        elif self.check_CMD_SERVO_MODE(command[3]) == 'Velocity':
+            mode = 1
+        msec_velocity = int(command[4])
+        
+        self.firmata.config_servo_ex(pin, angle, mode, msec_velocity)
+        
+        return 'okay'
+        
+    def move_servo_all(self, command):
+        """
+        This method is added dor 86Duino Servo library by Acen.
+        """
+        
+        self.firmata.move_servo_all()
+        
+        return 'okay'
+        
+    def init_imu(self, command):
+        """
+        This method is added dor 86Duino FreeIMU1 library.
+        """
+        
+        id = int(command[1])
+        
+        self.firmata.init_imu(id)
+        
+        self.imu_busy = 1
+        self.imu_busy_ID = id
+        
+        return 'okay'
+		
+	# Define functions to perform motions here
+	
     # This table must be at the bottom of the file because Python does not provide forward referencing for
     # the methods defined above.
     command_dict = {'crossdomain.xml': send_cross_domain_policy, 'reset_all': reset_arduino,
@@ -585,6 +834,9 @@ class ScratchCommandHandlers:
                     'digital_pin_mode_ja': digital_pin_mode_ja,
                     'analog_pin_mode_ja': analog_pin_mode_ja,
                     'digital_write': digital_write, 'analog_write': analog_write,
+                    'play_tone': play_tone, 'tone_off': tone_off,
                     'set_servo_position': set_servo_position, 'poll': poll,
-                    'debugger': debug_control,  'digital_read': digital_read, 'analog_read': analog_read# insert motion commands here
+                    'debugger': debug_control, 'digital_read': digital_read, 'analog_read': analog_read,
+                    'config_servo_ex': config_servo_ex, 'move_servo_all': move_servo_all,
+                    'set_encoder_mode': set_encoder_mode, 'init_imu': init_imu, 'move_one_servo_ex': move_one_servo_ex# insert motion commands here
                     }

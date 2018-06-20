@@ -1,4 +1,4 @@
-﻿//================================================================//
+﻿/*================================================================//
 //     __      ____   ____                                        //
 //   /'_ `\   /'___\ /\  _`\             __                       //
 //  /\ \L\ \ /\ \__/ \ \ \/\ \   __  __ /\_\     ___      ___     //
@@ -9,6 +9,28 @@
 //                                                                //
 //                                       http://www.86duino.com   //
 //================================================================//
+  Main.cs - DM&P 86ME
+  Copyright (c) 2017 Sayter <sayter@dmp.com.tw>. All right reserved.
+  Copyright (c) 2018 RoBoardGod <roboardgod@dmp.com.tw>. All right reserved.
+
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 2 of
+  the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+  MA  02110-1301  USA
+
+  (If you need a commercial license, please contact soc@dmp.com.tw
+   to get more information.)
+*/
 
 using System;
 using System.Collections.Generic;
@@ -18,6 +40,7 @@ using System.IO;
 using System.Collections;
 using System.Threading;
 using Newtonsoft.Json;
+using System.Drawing.Imaging;
 
 namespace _86ME_ver2
 {
@@ -78,8 +101,17 @@ namespace _86ME_ver2
         string[] motionevent = new string[8];
         char[] delimiterChars = { ' ', '\t', '\r', '\n' };
         JsonSerializerSettings json_settings;
+        TabPage tp = new TabPage();
+        Button SWAPbutton = new Button();
+        ComboBox SWAPcomboBox1 = new ComboBox();
+        ComboBox SWAPcomboBox2 = new ComboBox();
+        bool develop_mode = false;
+        int dpi;
+        bool picmode = false;
         public Main(Dictionary<string, string> lang_dic)
         {
+            Graphics graphics = this.CreateGraphics();
+            dpi = (int)graphics.DpiX;
             InitializeComponent();
             saveFrame.Visible = false;
             loadFrame.Visible = false;
@@ -88,6 +120,7 @@ namespace _86ME_ver2
             Motion_groupBox.Enabled = false;
             Setting_groupBox.Enabled = false;
             GenerationTab.Enabled = false;
+            MotionConfig.Enabled = false;
             saveAsFileToolStripMenuItem.Enabled = false;
             saveFileToolStripMenuItem.Enabled = false;
             editToolStripMenuItem.Enabled = false;
@@ -98,13 +131,39 @@ namespace _86ME_ver2
             json_settings = new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.All,
-                Formatting = Formatting.None
+                Formatting = Formatting.Indented
             };
             applyLang();
+            swap_combo(0, 45);
+            tp.Text = "Swap";
+            tp.BackColor = System.Drawing.Color.White;
+            SWAPbutton.Text = "Swap";
+            SWAPbutton.ForeColor = System.Drawing.Color.Red;
+            SWAPbutton.Size = new Size(65 * dpi / 96, 50 * dpi / 96);
+            SWAPbutton.Top += 5 * dpi / 96;
+            SWAPbutton.Left += 110 * dpi / 96;
+            SWAPcomboBox1.Size = new Size(65 * dpi / 96, 20 * dpi / 96);
+            SWAPcomboBox1.Top += 15 * dpi / 96;
+            SWAPcomboBox1.Left += 20 * dpi / 96;
+            SWAPcomboBox1.Font = new Font("Arial", 14);
+            SWAPcomboBox2.Size = new Size(65 * dpi / 96, 20 * dpi / 96);
+            SWAPcomboBox2.Top += 15 * dpi / 96;
+            SWAPcomboBox2.Left += 200 * dpi / 96;
+            SWAPcomboBox2.Font = new Font("Arial", 14);
+            tp.Controls.Add(SWAPbutton);
+            tp.Controls.Add(SWAPcomboBox1);
+            tp.Controls.Add(SWAPcomboBox2);
+            SWAPbutton.Click += new EventHandler(this.SWAPbutton_Click);
+            Hint_groupBox.Location = new Point(0, 0);
+            Hint_groupBox.Size = new Size(720 * dpi / 96, 115 * dpi / 96);
+            draw_watermark();
+            this.CenterToScreen();
         }
 
         public Main(string filename, Dictionary<string, string> lang_dic)
         {
+            Graphics graphics = this.CreateGraphics();
+            dpi = (int)graphics.DpiX;
             InitializeComponent();
             saveFrame.Visible = false;
             loadFrame.Visible = false;
@@ -128,6 +187,31 @@ namespace _86ME_ver2
             applyLang();
             init_load_file = filename;
             Application.Idle += new EventHandler(init_load);
+            swap_combo(0, 45);
+            tp.Text = "Swap";
+            tp.BackColor = System.Drawing.Color.White;
+            SWAPbutton.Text = "Swap";
+            SWAPbutton.ForeColor = System.Drawing.Color.Red;
+            SWAPbutton.Size = new Size(65 * dpi / 96, 50 * dpi / 96);
+            SWAPbutton.Top += 5 * dpi / 96;
+            SWAPbutton.Left += 110 * dpi / 96;
+            SWAPcomboBox1.Size = new Size(65 * dpi / 96, 20 * dpi / 96);
+            SWAPcomboBox1.Top += 15 * dpi / 96;
+            SWAPcomboBox1.Left += 20 * dpi / 96;
+            SWAPcomboBox1.Font = new Font("Arial", 14);
+            SWAPcomboBox2.Size = new Size(65 * dpi / 96, 20 * dpi / 96);
+            SWAPcomboBox2.Top += 15 * dpi / 96;
+            SWAPcomboBox2.Left += 200 * dpi / 96;
+            SWAPcomboBox2.Font = new Font("Arial", 14);
+            tp.Controls.Add(SWAPbutton);
+            tp.Controls.Add(SWAPcomboBox1);
+            tp.Controls.Add(SWAPcomboBox2);
+            SWAPbutton.Click += new EventHandler(this.SWAPbutton_Click);
+            Hint_groupBox.Location = new Point(0, 0);
+            Hint_groupBox.Size = new Size(720 * dpi / 96, 115 * dpi / 96);
+            draw_watermark();
+            this.CenterToScreen();
+
         }
 
         private void init_load(object sender, EventArgs e)
@@ -144,7 +228,6 @@ namespace _86ME_ver2
             if (ME_Motionlist == null || ME_Motionlist.Count == 0)
                 return;
             Framelist.Controls.Clear();
-
             int count = 0;
             int picmode_count = 1;
             if (picmode_move == true)
@@ -159,41 +242,42 @@ namespace _86ME_ver2
                     flabel[i] = new Label();
                     ftext[i] = new MaskedTextBox();
                     fbar[i] = new HScrollBar();
-                    fpanel[i].Size = new Size(267, 30);
+                    fpanel[i].Size = new Size(252 * dpi / 96, 25 * dpi / 96);
                     fpanel[i].BackColor = Color.White;
                     fpanel[i].BorderStyle = BorderStyle.FixedSingle;
-                    if (Motion.picfilename == null || Motion.newflag == true)
+                    if (!picmode || Motion.newflag == true)
                     {
-                        fpanel[i].Top = count * 30;
+                        fpanel[i].Top = count * 30 * dpi / 96;
                         Motion.channely[i] = count * 30;
                     }
                     else
                     {
                         if (Motion.channely[i] == 0 && count != 0)
                         {
-                            fpanel[i].Top = picmode_count * 30;
+                            fpanel[i].Top = picmode_count * 30 * dpi / 96;
                             picmode_count++;
                         }
                         else
                         {
-                            fpanel[i].Top = Motion.channely[i];
+                            fpanel[i].Top = Motion.channely[i] * dpi / 96;
                         }
-                        fpanel[i].Left = Motion.channelx[i];
+                        fpanel[i].Left = Motion.channelx[i] * dpi / 96;
                     }
-                    fcheck[i].Size = new Size(15, 15);
-                    fcheck[i].Top += 3;
-                    fcheck[i].Left += 5;
+                    fcheck[i].Size = new Size(15 * dpi / 96, 15 * dpi / 96);
+                    fcheck[i].Top += 3 * dpi / 96;
+                    fcheck[i].Left += 5 * dpi / 96;
                     fcheck[i].Checked = ((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).used_servos.Contains(i);
                     fcheck[i].CheckedChanged += new EventHandler(used_CheckedChanged);
                     fcheck[i].Name = i.ToString();
                     if (((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).moton_layer == 0)
                         fcheck[i].Visible = false;
-                    flabel[i].Size = new Size(40, 18);
+                    flabel[i].Size = new Size(40 * dpi / 96, 18 * dpi / 96);
                     flabel[i].BackColor = Color.White;
-                    flabel[i].Top += 3;
-                    flabel[i].Left += 20;
-                    ftext[i].Size = new Size(40, 22);
-                    ftext[i].Left += 60;
+                    flabel[i].TextAlign = ContentAlignment.MiddleRight;
+                    flabel[i].Top += 3 * dpi / 96;
+                    flabel[i].Left += 5 * dpi / 96;
+                    ftext[i].Size = new Size(40 * dpi / 96, 22 * dpi / 96);
+                    ftext[i].Left += 45 * dpi / 96;
                     ftext[i].TextAlign = HorizontalAlignment.Right;
 
                     flabel[i].Name = i.ToString();
@@ -211,8 +295,8 @@ namespace _86ME_ver2
                     }
                     ftext[i].KeyPress += new KeyPressEventHandler(numbercheck);
 
-                    fbar[i].Size = new Size(135, 22);
-                    fbar[i].Left += 105;
+                    fbar[i].Size = new Size(135 * dpi / 96, 22 * dpi / 96);
+                    fbar[i].Left += 90 * dpi / 96;
                     fbar[i].Maximum = (int)(Max[i] + 9);
                     fbar[i].Minimum = (int)min[i];
                     fbar[i].Name = i.ToString();
@@ -223,8 +307,8 @@ namespace _86ME_ver2
                     fonoff[i].FlatAppearance.BorderSize = 0;
                     fonoff[i].Image = Properties.Resources.on;
                     fonoff[i].BackgroundImageLayout = ImageLayout.Center;
-                    fonoff[i].Size = new Size(23, 23);
-                    fonoff[i].Left += 241;
+                    fonoff[i].Size = new Size(23 * dpi / 96, 23 * dpi / 96);
+                    fonoff[i].Left += 226 * dpi / 96;
                     fonoff[i].Name = i.ToString();
                     fonoff[i].CheckedChanged += new EventHandler(onOff_CheckedChanged);
                     if ((servo_onOff & (1UL << i)) != 0)
@@ -271,15 +355,15 @@ namespace _86ME_ver2
                         fbar[i].Enabled = false;
                     }
 
-                    ttp.SetToolTip(fonoff[i], Main_lang_dic["fonoff_ToolTip"]);
-                    ttp.SetToolTip(fcheck[i], Main_lang_dic["fcheck_ToolTip"]);
+                    //ttp.SetToolTip(fonoff[i], Main_lang_dic["fonoff_ToolTip"]);
+                    //ttp.SetToolTip(fcheck[i], Main_lang_dic["fcheck_ToolTip"]);
                     fpanel[i].Controls.Add(fcheck[i]);
                     fpanel[i].Controls.Add(fonoff[i]);
                     fpanel[i].Controls.Add(flabel[i]);
                     fpanel[i].Controls.Add(ftext[i]);
                     fpanel[i].Controls.Add(fbar[i]);
                     Framelist.Controls.Add(fpanel[i]);
-                    
+
                     count++;
                 }
             }
@@ -379,12 +463,17 @@ namespace _86ME_ver2
         {
             if (e.Button == MouseButtons.Left)
             {
+                float fpx, fpy;
+                int i = int.Parse(((Label)sender).Name);
                 if (e.Y - mdy + 30 < 550)
-                    fpanel[int.Parse(((Label)sender).Name)].Top += e.Y - mdy;
+                    fpanel[i].Top += e.Y - mdy;
                 if (e.X - mdx + 260 < 700)
-                    fpanel[int.Parse(((Label)sender).Name)].Left += e.X-mdx;
-                Motion.channely[int.Parse(((Label)sender).Name)] = fpanel[int.Parse(((Label)sender).Name)].Top;
-                Motion.channelx[int.Parse(((Label)sender).Name)] = fpanel[int.Parse(((Label)sender).Name)].Left;
+                    fpanel[i].Left += e.X - mdx;
+                fpy = fpanel[i].Top;
+                fpx = fpanel[i].Left;
+
+                Motion.channely[i] = (int)(fpy * 96 / dpi);
+                Motion.channelx[i] = (int)(fpx * 96 / dpi);
                 picmode_move = true;
             }
         }
@@ -392,44 +481,144 @@ namespace _86ME_ver2
         private void Main_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.F1)
-                System.Diagnostics.Process.Start("http://www.86duino.com/index.php?p=11544&lang=TW");
+                System.Diagnostics.Process.Start("http://www.86duino.com/index.php?p=11544&lang=" + Main_lang_dic["language"]);
             if (e.Control && e.KeyCode == Keys.S)
                 saveFileToolStripMenuItem_Click(sender, e);
 
-            if (e.KeyCode == Keys.S)
+            if (e.KeyCode == Keys.S && main_state == 0)
             {
-                main_state = 1;
+                this.Text = "[]" + this.Text;
+                main_state++;
+                this.Text = this.Text.Insert(main_state, e.KeyCode.ToString());
                 main_key_time = DateTime.Now;
             }
             if (e.KeyCode == Keys.A && main_state == 1)
             {
                 if ((DateTime.Now - main_key_time).TotalMilliseconds < 1000)
-                    main_state = 2;
+                {
+                    main_state++;
+                    this.Text = this.Text.Insert(main_state, e.KeyCode.ToString());
+                }
             }
             if (e.KeyCode == Keys.Y && main_state == 2)
             {
                 if ((DateTime.Now - main_key_time).TotalMilliseconds < 1000)
-                    main_state = 3;
+                {
+                    main_state++;
+                    this.Text = this.Text.Insert(main_state, e.KeyCode.ToString());
+                }
             }
             if (e.KeyCode == Keys.T && main_state == 3)
             {
                 if ((DateTime.Now - main_key_time).TotalMilliseconds < 1000)
-                    main_state = 4;
+                {
+                    main_state++;
+                    this.Text = this.Text.Insert(main_state, e.KeyCode.ToString());
+                }
             }
             if (e.KeyCode == Keys.E && main_state == 4)
             {
                 if ((DateTime.Now - main_key_time).TotalMilliseconds < 1000)
-                    main_state = 5;
+                {
+                    main_state++;
+                    this.Text = this.Text.Insert(main_state, e.KeyCode.ToString());
+                }
             }
             if (e.KeyCode == Keys.R && main_state == 5)
             {
                 if ((DateTime.Now - main_key_time).TotalMilliseconds < 1000)
                 {
+                    if (Motion != null)
+                    {
+                        develop_mode = !develop_mode;
+                        if (develop_mode)
+                        {
+                            hint_richTextBox.ForeColor = System.Drawing.Color.Red;
+                            GenerationTab.TabPages.Add(tp);
+                        }
+                        else
+                        {
+                            hint_richTextBox.ForeColor = System.Drawing.SystemColors.HotTrack;
+                            GenerationTab.TabPages.Remove(tp);
+
+                        }
+
+                    }
+                    this.Text = "86Duino Motion Editor";
+
                     main_state = 0;
                 }
             }
-        }
 
+            if ((DateTime.Now - main_key_time).TotalMilliseconds >= 1000 && main_state != 0)
+            {
+                this.Text = "86Duino Motion Editor";
+                main_state = 0;
+            }
+        }
+        private void SWAPbutton_Click(object sender, EventArgs e)
+        {
+            int pos = Motion.channelx[int.Parse(SWAPcomboBox1.SelectedItem.ToString())];
+            Motion.channelx[int.Parse(SWAPcomboBox1.SelectedItem.ToString())] = Motion.channelx[int.Parse(SWAPcomboBox2.SelectedItem.ToString())];
+            Motion.channelx[int.Parse(SWAPcomboBox2.SelectedItem.ToString())] = pos;
+            pos = Motion.channely[int.Parse(SWAPcomboBox1.SelectedItem.ToString())];
+            Motion.channely[int.Parse(SWAPcomboBox1.SelectedItem.ToString())] = Motion.channely[int.Parse(SWAPcomboBox2.SelectedItem.ToString())];
+            Motion.channely[int.Parse(SWAPcomboBox2.SelectedItem.ToString())] = pos;
+
+            Motion.swap_config(int.Parse(SWAPcomboBox1.SelectedItem.ToString()), int.Parse(SWAPcomboBox2.SelectedItem.ToString()));
+
+            for (int i = 0; i < ME_Motionlist.Count; i++)
+            {
+                ((ME_Motion)ME_Motionlist[i]).swap(int.Parse(SWAPcomboBox1.SelectedItem.ToString()), int.Parse(SWAPcomboBox2.SelectedItem.ToString()));
+            }
+        
+            GenerationTab.Enabled = true;
+            MotionConfig.Enabled = true;
+            update_motionlist();
+            move_up.Enabled = false;
+            move_down.Enabled = false;
+            // Motion Properties
+            ME_Motion m = ((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]);
+            Blocking.Enabled = true;
+            NonBlocking.Enabled = true;
+            if (m.property == (int)motion_property.blocking)
+                Blocking.Checked = true;
+            else if (m.property == (int)motion_property.nonblocking)
+                NonBlocking.Checked = true;
+            MotionLayerCombo.SelectedIndex = m.moton_layer;
+            CompRangeText.Text = m.comp_range.ToString();
+            MotionControlCombo.SelectedIndex = m.control_method;
+            TriggerCommandCombo.SelectedIndex = m.trigger_index;
+            Framelist.Controls.Clear();
+            current_motionlist_idx = -1;
+            last_motionlist_idx = -1;
+            freshflag[1] = false;
+            if (((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events.Count > 0 && MotionConfig.SelectedIndex == 0)
+            {
+                Motionlist.SelectedIndex = 0;
+            }
+            if (MotionConfig.SelectedIndex == 0)
+                this.hint_richTextBox.Text =
+                            "   ___   __   ____        _\n" +
+                            "  ( _ ) / /_ |  _ \\ _   _(_)_ __   ___\n" +
+                            "  / _ \\| '_ \\| | | | | | | | '_ \\ / _ \\\n" +
+                            " | (_) | (_) | |_| | |_| | | | | | (_) |\n" +
+                            "  \\___/ \\___/|____/ \\__,_|_|_| |_|\\___/";
+            else
+                this.hint_richTextBox.Text = Main_lang_dic["hint9"];
+            MessageBox.Show("Pin" + SWAPcomboBox1.SelectedItem.ToString() + " and Pin" + SWAPcomboBox2.SelectedItem.ToString() + " swap success! ");
+            draw_watermark();
+        }
+        public void swap_combo(int low, int high)
+        {
+            for (int i = low; i < high; i++)
+            {
+                SWAPcomboBox1.Items.Add(i);
+                SWAPcomboBox2.Items.Add(i);
+            }
+            SWAPcomboBox1.SelectedIndex = 0;
+            SWAPcomboBox2.SelectedIndex = 1;
+        }
         public void scroll_event(object sender, ScrollEventArgs e) //Scroll event
         {
             this.ftext[int.Parse(((HScrollBar)sender).Name)].Text = ((HScrollBar)sender).Value.ToString();            
@@ -670,7 +859,7 @@ namespace _86ME_ver2
                     return ;
             }
 
-            NewMotion nMotion = new NewMotion(Main_lang_dic);
+            NewMotion nMotion = new NewMotion(Main_lang_dic, develop_mode);
             if (string.Compare(com_port, "OFF") != 0)
             {
                 nMotion.arduino = arduino;
@@ -714,6 +903,8 @@ namespace _86ME_ver2
 
                 if(Robot_pictureBox.Image != null)
                     Robot_pictureBox.Image = null;
+                if (Robot_watermark.Image != null)
+                    Robot_watermark.Image = null;
                 if (nMotion.picfilename != null)
                 {
                     picture_name = nMotion.picfilename;
@@ -737,6 +928,10 @@ namespace _86ME_ver2
                 this.hint_richTextBox.Text = Main_lang_dic["hint1"];
                 this.MotionConfig.Enabled = false;
                 this.GenerationTab.Enabled = false;
+                this.Text = "86Duino Motion Editor - No Name";
+                Hint_groupBox.Location = new Point(321, 0);
+                Hint_groupBox.Size = new Size(399 * dpi / 96, 115 * dpi / 96);
+                draw_watermark();
             }
         }
 
@@ -760,6 +955,8 @@ namespace _86ME_ver2
 
         private void optionToolStripMenuItem_Click(object sender, EventArgs e)  //option -> robot configuration
         {
+            if (board_ver86 >= Motion.comboBox1.Items.Count || develop_mode)
+                Motion.develop_mode_change(true);
             Motion.NewMotion_lang_dic = Main_lang_dic;
             Motion.applyLang();
             for (int i = 0; i < 45; i++)
@@ -779,6 +976,7 @@ namespace _86ME_ver2
                     try
                     {
                         Robot_pictureBox.Image = Image.FromFile(Motion.picfilename);
+                        Robot_watermark.Image = null;
                     }
                     catch
                     {
@@ -808,21 +1006,39 @@ namespace _86ME_ver2
                 {
                     Motion.clear_Channels();
                     if (board_ver86 == 0)
-                        Motion.create_panel(0, 45, 0);
-                    else if (board_ver86 == 1)
                     {
                         Motion.create_panel(0, 14, 0);
                         Motion.create_panel(42, 45, 14);
+                        SWAPcomboBox1.Items.Clear();
+                        SWAPcomboBox2.Items.Clear();
+                        swap_combo(0, 14);
+                        swap_combo(42, 45);
+
+                    }
+                    else if (board_ver86 == 1)
+                    {
+                        Motion.create_panel(0, 45, 0);
+                        SWAPcomboBox1.Items.Clear();
+                        SWAPcomboBox2.Items.Clear();
+                        swap_combo(0, 45);
                     }
                     else if (board_ver86 == 2)
                     {
                         Motion.create_panel(0, 21, 0);
                         Motion.create_panel(31, 33, 21);
                         Motion.create_panel(42, 45, 23);
+                        SWAPcomboBox1.Items.Clear();
+                        SWAPcomboBox2.Items.Clear();
+                        swap_combo(0, 21);
+                        swap_combo(31, 33);
+                        swap_combo(42, 45);
                     }
                     else if (board_ver86 == 3)
                     {
                         Motion.create_panel(0, 36, 0);
+                        SWAPcomboBox1.Items.Clear();
+                        SWAPcomboBox2.Items.Clear();
+                        swap_combo(0, 36);
                     }
                 }
                 if (used_imu != Motion.comboBox2.SelectedIndex)
@@ -859,7 +1075,7 @@ namespace _86ME_ver2
                 }
                 else
                 {
-                    Motion.mirror_loaded.Text = "";
+                    Motion.mirror_loaded.Text = ""; 
                 }
 
                 Motion.comboBox1.SelectedIndex = board_ver86;
@@ -916,6 +1132,7 @@ namespace _86ME_ver2
             {
                 load_filename = dialog.FileName.ToString();
                 save_project(load_filename);
+                this.Text = "86Duino Motion Editor - " + Path.GetFileName(load_filename);
             }
         }
 
@@ -924,11 +1141,40 @@ namespace _86ME_ver2
             TextWriter writer = new StreamWriter(filename);
 
             ME_RBM rbm = new ME_RBM();
+            
+
             rbm.board = Motion.comboBox1.SelectedItem.ToString();
             if (Motion.mirrorfilename != null)
                 rbm.mirror = Motion.mirrorfilename;
-            if (Motion.picfilename != null)
+            if (!develop_mode && Robot_pictureBox.Image != null)
+            {
+                //format jpg
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    Robot_pictureBox.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    rbm.graph = ms.ToArray();
+                }
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    Robot_watermark.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    rbm.watermark = ms.ToArray();
+                }
+
+
+                //format bmp
+                /*
+                img = new Bitmap(Robot_pictureBox.Image);
+                using (var stream = new MemoryStream())
+                {
+                    img.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
+                    rbm.graph = stream.ToArray();
+                }
+                */
+            }
+            if (Motion.picfilename != null && Robot_pictureBox.Image != null)
+            {
                 rbm.picture[0] = Motion.picfilename;
+            }
             rbm.sync = sync_speed.Value;
             rbm.imu[0] = Motion.comboBox2.SelectedItem.ToString();
             rbm.imu[1] = Motion.q.w.ToString();
@@ -956,7 +1202,7 @@ namespace _86ME_ver2
                     Motion.ftext4[i].Text = "2400";
                 rbm.range[i + 45] = uint.Parse(Motion.ftext4[i].Text);
 
-                if (Motion.picfilename != null)
+                if (Motion.picfilename != null || Robot_pictureBox.Image != null)
                 {
                     rbm.picture[i + 1] = Motion.channelx[i].ToString();
                     rbm.picture[i + 45 + 1] = Motion.channely[i].ToString();
@@ -994,6 +1240,7 @@ namespace _86ME_ver2
 
         private void actionToolStripMenuItem_Click(object sender, EventArgs e) //load project
         {
+            picmode = false;
             bool _needToSave = needToSave();
             if (_needToSave && File.Exists(load_filename))
             {
@@ -1033,46 +1280,50 @@ namespace _86ME_ver2
             {
                 this.GenerationTab.Enabled = true;
                 if (((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events.Count > 0)
-                    Motionlist.SelectedIndex = 0;
+                    Motionlist.SelectedIndex = -1;
             }
             else
             {
                 this.GenerationTab.Enabled = false;
                 this.MotionConfig.Enabled = false;
             }
+            this.Text = "86Duino Motion Editor - " + Path.GetFileName(filename);
+
+            Hint_groupBox.Location = new Point(321, 0);
+            Hint_groupBox.Size = new Size(399 * dpi / 96, 115 * dpi / 96);
+
         }
 
         private void load_project(string filename)
         {
-            string[] boards = new string[] { "86Duino_One",
-                                             "86Duino_Zero",
-                                             "86Duino_EduCake",
-                                             "86Duino_AI"};
+            string[] boards = new string[] { "86Duino Zero",
+                                             "86Duino One",
+                                             "86Duino EduCake",
+                                             "86Duino AI"};
             string[] servos = new string[] { "---noServo---",
+                                             "DMP_RS0263",
+                                             "DMP_RS1270",
                                              "EMAX_ES08AII",
                                              "EMAX_ES3104",
+                                             "FUTABA_S3003",
+                                             "GWS_S03T",
+                                             "GWS_S777",
+                                             "GWS_MICRO",
+                                             "HITEC_HSR8498",
+                                             "KONDO_KRS4014",
+                                             "KONDO_KRS4024",
                                              "KONDO_KRS786",
                                              "KONDO_KRS788",
                                              "KONDO_KRS78X",
-                                             "KONDO_KRS4014",
-                                             "KONDO_KRS4024",
-                                             "HITEC_HSR8498",
-                                             "FUTABA_S3003",
                                              "SHAYYE_SYS214050",
+                                             "TOWERPRO_SG90",
                                              "TOWERPRO_MG90S",
                                              "TOWERPRO_MG995",
                                              "TOWERPRO_MG996",
-                                             "TOWERPRO_SG90",
-                                             "DMP_RS0263",
-                                             "DMP_RS1270",
-                                             "GWS_S777",
-                                             "GWS_S03T",
-                                             "GWS_MICRO",
                                              "OtherServos"};
             string[] imus =   new string[] { "NONE",
-                                             "86Duino One On-Board IMU",
-                                             "RM-G146",
-                                             "86Duino AI On-Board IMU"};
+                                             "RoBoard RM-G146",
+                                             "On-Board IMU"};
 
             ME_RBM rbm;
             try
@@ -1095,8 +1346,8 @@ namespace _86ME_ver2
             Framelist.Controls.Clear();
             mirror_name = null;
             picture_name = null;
-            bool picmode = false;
-            NewMotion nMotion = new NewMotion(Main_lang_dic);
+            Robot_watermark.Image = null;
+            NewMotion nMotion = new NewMotion(Main_lang_dic, develop_mode);
             load_filename = filename;
             ME_Motionlist = new ArrayList();
             MotionCombo.Items.Clear();
@@ -1109,12 +1360,26 @@ namespace _86ME_ver2
                 if (string.Compare(rbm.board, boards[i]) == 0)
                 {
                     board_ver86 = i;
+                    if (board_ver86 >= nMotion.comboBox1.Items.Count)
+                        nMotion.develop_mode_change(true);
                     nMotion.comboBox1.SelectedIndex = i;
-                    if (i == 1)
+                    nMotion.clear_Channels();
+                    if (i == 0)
                     {
-                        nMotion.clear_Channels();
                         nMotion.create_panel(0, 14, 0);
                         nMotion.create_panel(42, 45, 14);
+                        SWAPcomboBox1.Items.Clear();
+                        SWAPcomboBox2.Items.Clear();
+                        swap_combo(0, 14);
+                        swap_combo(42, 45);
+
+                    }
+                    else if (i == 1)
+                    {
+                        nMotion.create_panel(0, 45, 0);
+                        SWAPcomboBox1.Items.Clear();
+                        SWAPcomboBox2.Items.Clear();
+                        swap_combo(0, 45);
                     }
                     else if (i == 2)
                     {
@@ -1122,11 +1387,19 @@ namespace _86ME_ver2
                         nMotion.create_panel(0, 21, 0);
                         nMotion.create_panel(31, 33, 21);
                         nMotion.create_panel(42, 45, 23);
+                        SWAPcomboBox1.Items.Clear();
+                        SWAPcomboBox2.Items.Clear();
+                        swap_combo(0, 21);
+                        swap_combo(31, 33);
+                        swap_combo(42, 45);
                     }
                     else if (i == 3)
                     {
                         nMotion.clear_Channels();
                         nMotion.create_panel(0, 36, 0);
+                        SWAPcomboBox1.Items.Clear();
+                        SWAPcomboBox2.Items.Clear();
+                        swap_combo(0, 36);
                     }
                 }
             }
@@ -1243,9 +1516,23 @@ namespace _86ME_ver2
                 }
             }
             //Picture
-            if (rbm.picture[0] != null)
+            if (rbm.picture[0] != null || rbm.graph != null)
             {
-                if (File.Exists(rbm.picture[0]))
+                if (rbm.graph != null)
+                {
+                    picmode = true;
+                    nMotion.picfilename = rbm.picture[0];
+                    nMotion.pic_loaded.Text = Path.GetFileName(nMotion.picfilename);
+                    for (int i = 0; i < 45; i++)
+                    {
+                        if (rbm.picture[i + 1] != null && rbm.picture[i + 45 + 1] != null)
+                        {
+                            nMotion.channelx[i] = int.Parse(rbm.picture[i + 1]);
+                            nMotion.channely[i] = int.Parse(rbm.picture[i + 45 + 1]);
+                        }
+                    }
+                }
+                else if (File.Exists(rbm.picture[0]))
                 {
                     picmode = true;
                     nMotion.picfilename = rbm.picture[0];
@@ -1309,8 +1596,49 @@ namespace _86ME_ver2
                 TriggerCommandCombo.Items.Add(trigger_cmd[i].name);
 
             nMotion.write_back();
-
-            if (nMotion.picfilename != null && picmode == true)
+            
+            if (rbm.graph != null)
+            {
+                try
+                {
+                    MemoryStream ms = new MemoryStream(rbm.graph, 0, rbm.graph.Length);
+                    ms.Write(rbm.graph, 0, rbm.graph.Length);
+                    Robot_pictureBox.Image = Image.FromStream(ms, true);//Exception occurs here
+                }
+                catch { }
+                if (rbm.watermark != null)
+                {
+                    try
+                    {
+                        MemoryStream ms = new MemoryStream(rbm.watermark, 0, rbm.watermark.Length);
+                        ms.Write(rbm.watermark, 0, rbm.watermark.Length);
+                        Robot_watermark.Image = Image.FromStream(ms, true);//Exception occurs here
+                    }
+                    catch { }
+                }
+                else
+                {
+                    try
+                    {
+                        Bitmap bmp = Properties.Resources.default_BG;
+                        for (int x = 0; x < bmp.Width; x++)
+                        {
+                            for (int y = 0; y < bmp.Height; y++)
+                            {
+                                Color pixelColor = bmp.GetPixel(x, y);
+                                int gray = (pixelColor.R + pixelColor.G + pixelColor.B) / 3;
+                                bmp.SetPixel(x, y, Color.FromArgb(gray, gray, gray));
+                            }
+                        }
+                        Robot_watermark.Image = bmp;
+                    }
+                    catch
+                    {
+                        MessageBox.Show(Main_lang_dic["errorMsg17"]);
+                    }
+                }
+            }
+            else if (nMotion.picfilename != null && picmode == true)
             {
                 picture_name = nMotion.picfilename;
                 try
@@ -1355,7 +1683,8 @@ namespace _86ME_ver2
                             "  / _ \\| '_ \\| | | | | | | | '_ \\ / _ \\\n" +
                             " | (_) | (_) | |_| | |_| | | | | | (_) |\n" +
                             "  \\___/ \\___/|____/ \\__,_|_|_| |_|\\___/";
-            MessageBox.Show(filename + Main_lang_dic["loadedText"]);
+            //MessageBox.Show(filename + Main_lang_dic["loadedText"]);
+            draw_watermark();
         }
 
         private void Main_Load(object sender, EventArgs e)
@@ -1367,6 +1696,7 @@ namespace _86ME_ver2
 
         private void MotionCombo_SelectedIndexChanged(object sender, EventArgs e)
         {
+
             GenerationTab.Enabled = true;
             MotionConfig.Enabled = true;
             update_motionlist();
@@ -1391,9 +1721,9 @@ namespace _86ME_ver2
             freshflag[1] = false;
             if (((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events.Count > 0 && MotionConfig.SelectedIndex == 0)
             {
-                Motionlist.SelectedIndex = 0;
+                Motionlist.SelectedIndex = -1;
             }
-            if (MotionConfig.SelectedIndex == 0)
+            if (MotionConfig.SelectedIndex == -1)
                 this.hint_richTextBox.Text =
                             "   ___   __   ____        _\n" +
                             "  ( _ ) / /_ |  _ \\ _   _(_)_ __   ___\n" +
@@ -1402,6 +1732,7 @@ namespace _86ME_ver2
                             "  \\___/ \\___/|____/ \\__,_|_|_| |_|\\___/";
                 else
                     this.hint_richTextBox.Text = Main_lang_dic["hint9"];
+            draw_background();
         }
 
         private void ESP8266_KeyPress(object sender, KeyPressEventArgs e)
@@ -1758,10 +2089,10 @@ namespace _86ME_ver2
             else
                 mif = (ME_If)((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex];
             cb.Name = name;
-            cb.Size = new Size(55, 22);
+            cb.Size = new Size(55 * dpi / 96, 22 * dpi / 96);
             cb.DropDownStyle = ComboBoxStyle.DropDownList;
-            cb.Top += top;
-            cb.Left += left;
+            cb.Top += top * dpi / 96;
+            cb.Left += left * dpi / 96;
             switch (name)
             {
                 case "5":
@@ -1804,10 +2135,10 @@ namespace _86ME_ver2
         private void setOpVComboBox(ComboBox cb, int top, int left, string name, bool isLeft)
         {
             cb.Name = name;
-            cb.Size = new Size(100, 22);
+            cb.Size = new Size(100 * dpi / 96, 22 * dpi / 96);
             cb.DropDownStyle = ComboBoxStyle.DropDownList;
-            cb.Top += top;
-            cb.Left += left;
+            cb.Top += top * dpi / 96;
+            cb.Left += left * dpi / 96;
             if (compute_var.Count > 0)
             {
                 foreach (KeyValuePair<string, double> entry in compute_var)
@@ -2042,6 +2373,7 @@ namespace _86ME_ver2
 
         private void Motionlist_SelectedIndexChanged(object sender, EventArgs e) // select motionlist
         {
+
             if (Motionlist.SelectedIndex == -1)
             {
                 DelayLabel.Visible = false;
@@ -2057,6 +2389,7 @@ namespace _86ME_ver2
             }
             if (Motionlist.SelectedItem != null && (MotionTest.Enabled))
             {
+                ttp.SetToolTip(Motionlist, Motionlist.Items[Motionlist.SelectedIndex].ToString());
                 move_up.Enabled = true;
                 move_down.Enabled = true;
                 current_motionlist_idx = Motionlist.SelectedIndex;
@@ -2212,6 +2545,7 @@ namespace _86ME_ver2
                     autocheck.Enabled = false;
                     freshflag[1] = false;
                     this.hint_richTextBox.Text = Main_lang_dic["hint5"];
+                    draw_watermark();
                 }
                 else if (String.Compare(datas[0], "[Flag]") == 0)
                 {
@@ -2231,21 +2565,23 @@ namespace _86ME_ver2
                     Framelist.Controls.Clear();
                     Label xlabel = new Label();
                     xlabel.Text = Main_lang_dic["flag_xlabel"];
-                    xlabel.Size = new Size(45, 22);
+                    xlabel.Size = new Size(45 * dpi / 96, 22 * dpi / 96);
+                    xlabel.BackColor = Color.Transparent;
 
                     MaskedTextBox xtext = new MaskedTextBox();
                     
                     xtext.Text = ((ME_Flag)((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex]).name;
                     xtext.KeyPress += new KeyPressEventHandler(gototext_KeyPress);
                     xtext.TextChanged += new EventHandler(gototext);
-                    xtext.Size = new Size(160, 22);
-                    xtext.Left += 45;
+                    xtext.Size = new Size(160 * dpi / 96, 22 * dpi / 96);
+                    xtext.Left += 45 * dpi / 96;
                     Framelist.Controls.Add(xlabel);
                     Framelist.Controls.Add(xtext);
                     Framelist.Enabled = true;
                     this.hint_richTextBox.Text = Main_lang_dic["hint6"];
                     xtext.SelectionStart = xtext.Text.Length;
-                    xtext.Focus();
+                    //xtext.Focus();
+                    draw_watermark();
                 }
                 else if (String.Compare(datas[0], "[Goto]") == 0)
                 {
@@ -2265,42 +2601,48 @@ namespace _86ME_ver2
                     Framelist.Controls.Clear();
                     Label xlabel = new Label();
                     xlabel.Text = Main_lang_dic["goto_xlabel"];
-                    xlabel.Size = new Size(95, 22);
+                    xlabel.Size = new Size(95 * dpi / 96, 22 * dpi / 96);
+                    xlabel.BackColor = System.Drawing.Color.White;
                     MaskedTextBox xtext = new MaskedTextBox();
                     xtext.Text = ((ME_Goto)((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex]).name;
                     xtext.KeyPress += new KeyPressEventHandler(gototext_KeyPress);
                     xtext.TextChanged += new EventHandler(gototext);
-                    xtext.Size = new Size(160, 22);
-                    xtext.Left += 100;
+                    xtext.Size = new Size(160 * dpi / 96, 22 * dpi / 96);
+                    xtext.Left += 100 * dpi / 96;
                     Label xlabel2 = new Label();
                     xlabel2.Text = Main_lang_dic["goto_xlabel2"];
-                    xlabel2.Size = new Size(65, 22);
-                    xlabel2.Top += 32;
+                    xlabel2.Size = new Size(65 * dpi / 96, 22 * dpi / 96);
+                    xlabel2.Top += 32 * dpi / 96;
+                    xlabel2.BackColor = System.Drawing.Color.White;
                     CheckBox xcheckbox = new CheckBox();
                     xcheckbox.Checked = ((ME_Goto)((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex]).is_goto;
                     xcheckbox.CheckedChanged += new EventHandler(enable_goto);
-                    xcheckbox.Size = new Size(15, 15);
-                    xcheckbox.Top += 32;
-                    xcheckbox.Left += 65;
+                    xcheckbox.Size = new Size(15 * dpi / 96, 15 * dpi / 96);
+                    xcheckbox.Top += 32 * dpi / 96;
+                    xcheckbox.Left += 65 * dpi / 96;
+                    xcheckbox.BackColor = System.Drawing.Color.White;
                     Label xlabel4 = new Label();
                     xlabel4.Name = "loop_inf_l";
                     xlabel4.Enabled = xcheckbox.Checked;
                     xlabel4.Text = Main_lang_dic["goto_xlabel4"];
-                    xlabel4.Size = new Size(80, 22);
-                    xlabel4.Top += 32;
-                    xlabel4.Left += 85;
+                    xlabel4.Size = new Size(80 * dpi / 96, 22 * dpi / 96);
+                    xlabel4.Top += 32 * dpi / 96;
+                    xlabel4.Left += 85 * dpi / 96;
+                    xlabel4.BackColor = System.Drawing.Color.White;
                     CheckBox xcheckbox2 = new CheckBox();
                     xcheckbox2.Enabled = xcheckbox.Checked;
                     xcheckbox2.Name = "loop_inf";
-                    xcheckbox2.Size = new Size(15, 15);
+                    xcheckbox2.Size = new Size(15 * dpi / 96, 15 * dpi / 96);
                     xcheckbox2.Checked = ((ME_Goto)((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex]).infinite;
                     xcheckbox2.CheckedChanged += new EventHandler(enable_infinite);
-                    xcheckbox2.Top += 32;
-                    xcheckbox2.Left += 165;
+                    xcheckbox2.Top += 32 * dpi / 96;
+                    xcheckbox2.Left += 165 * dpi / 96;
+                    xcheckbox2.BackColor = System.Drawing.Color.White;
                     Label xlabel3 = new Label();
                     xlabel3.Text = Main_lang_dic["goto_xlabel3"];
-                    xlabel3.Size = new Size(95, 22);
-                    xlabel3.Top += 62;
+                    xlabel3.Size = new Size(95 * dpi / 96, 22 * dpi / 96);
+                    xlabel3.Top += 62 * dpi / 96;
+                    xlabel3.BackColor = System.Drawing.Color.White;
                     MaskedTextBox xtext2 = new MaskedTextBox();
                     if (xcheckbox.Checked == false)
                         xtext2.Enabled = false;
@@ -2310,9 +2652,9 @@ namespace _86ME_ver2
                     xtext2.Text = ((ME_Goto)((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex]).loops;
                     xtext2.KeyPress += new KeyPressEventHandler(numbercheck);
                     xtext2.TextChanged += new EventHandler(loops_TextChanged);
-                    xtext2.Size = new Size(160, 22);
-                    xtext2.Left += 100;
-                    xtext2.Top += 62;
+                    xtext2.Size = new Size(160 * dpi / 96, 22 * dpi / 96);
+                    xtext2.Left += 100 * dpi / 96;
+                    xtext2.Top += 62 * dpi / 96;
                     this.hint_richTextBox.Text = Main_lang_dic["hint10"];
                     Framelist.Controls.Add(xlabel);
                     Framelist.Controls.Add(xtext);
@@ -2325,7 +2667,8 @@ namespace _86ME_ver2
                     Framelist.Enabled = true;
                     this.hint_richTextBox.Text = Main_lang_dic["hint7"];
                     xtext.SelectionStart = xtext.Text.Length;
-                    xtext.Focus();
+                    //xtext.Focus();
+                    draw_watermark();
                 }
                 else if (String.Compare(datas[0], "[GotoMotion]") == 0)
                 {
@@ -2343,26 +2686,26 @@ namespace _86ME_ver2
                     Framelist.Controls.Clear();
                     Label xlabel = new Label();
                     xlabel.Text = Main_lang_dic["gotoMotion_xlabel"];
-                    xlabel.Size = new Size(85, 20);
+                    xlabel.Size = new Size(85 * dpi / 96, 20 * dpi / 96);
                     Label xlabel2 = new Label();
                     xlabel2.Text = Main_lang_dic["gotoMotion_xlabel2"];
-                    xlabel2.Size = new Size(80, 20);
+                    xlabel2.Size = new Size(80 * dpi / 96, 20 * dpi / 96);
                     Label xlabel3 = new Label();
                     xlabel3.Text = Main_lang_dic["gotoMotion_xlabel3"];
-                    xlabel3.Size = new Size(450, 20);
+                    xlabel3.Size = new Size(450 * dpi / 96, 20 * dpi / 96);
                     Label xlabel4 = new Label();
                     xlabel4.Text = Main_lang_dic["gotoMotion_xlabel4"];
-                    xlabel4.Size = new Size(450, 20);
+                    xlabel4.Size = new Size(450 * dpi / 96, 20 * dpi / 96);
                     Label xlabel5 = new Label();
                     xlabel5.Text = Main_lang_dic["gotoMotion_xlabel5"];
-                    xlabel5.Size = new Size(650, 20);
+                    xlabel5.Size = new Size(650 * dpi / 96, 20 * dpi / 96);
 
                     ComboBox xcombo = new ComboBox();
-                    xcombo.Size = new Size(160, 22);
+                    xcombo.Size = new Size(160 * dpi / 96, 22 * dpi / 96);
                     RadioButton call_radio = new RadioButton();
                     RadioButton jump_radio = new RadioButton();
-                    call_radio.Size = new Size(300, 20);
-                    jump_radio.Size = new Size(300, 20);
+                    call_radio.Size = new Size(300 * dpi / 96, 20 * dpi / 96);
+                    jump_radio.Size = new Size(300 * dpi / 96, 20 * dpi / 96);
                     
                     for (int i = 0; i < MotionCombo.Items.Count; i++)
                         xcombo.Items.Add(((ME_Motion)ME_Motionlist[i]).name);
@@ -2381,18 +2724,18 @@ namespace _86ME_ver2
                     call_radio.CheckedChanged += new EventHandler(callRadio_CheckedChanged);
                     jump_radio.CheckedChanged += new EventHandler(jumpRadio_CheckedChanged);
 
-                    xlabel.Top += 3;
-                    xlabel2.Top += 25;
-                    xlabel3.Top += 105;
-                    xlabel3.Left += 26;
-                    xlabel4.Top += 65;
-                    xlabel4.Left += 26;
-                    xlabel5.Top += 135;
-                    xcombo.Left += 85;
-                    call_radio.Top += 85;
-                    call_radio.Left += 10;
-                    jump_radio.Top += 45;
-                    jump_radio.Left += 10;
+                    xlabel.Top += 3 * dpi / 96;
+                    xlabel2.Top += 25 * dpi / 96;
+                    xlabel3.Top += 105 * dpi / 96;
+                    xlabel3.Left += 26 * dpi / 96;
+                    xlabel4.Top += 65 * dpi / 96;
+                    xlabel4.Left += 26 * dpi / 96;
+                    xlabel5.Top += 135 * dpi / 96;
+                    xcombo.Left += 85 * dpi / 96;
+                    call_radio.Top += 85 * dpi / 96;
+                    call_radio.Left += 10 * dpi / 96;
+                    jump_radio.Top += 45 * dpi / 96;
+                    jump_radio.Left += 10 * dpi / 96;
                     Framelist.Controls.Add(xlabel);
                     Framelist.Controls.Add(xcombo);
                     Framelist.Controls.Add(xlabel2);
@@ -2404,6 +2747,7 @@ namespace _86ME_ver2
                     Framelist.Enabled = true;
 
                     this.hint_richTextBox.Text = Main_lang_dic["hint8"];
+                    draw_watermark();
                 }
                 else if (String.Compare(datas[0], "[Release]") == 0)
                 {
@@ -2423,6 +2767,7 @@ namespace _86ME_ver2
                             arduino.motor_release();
 
                     this.hint_richTextBox.Text = Main_lang_dic["hint14"];
+                    draw_watermark();
                 }
                 else if (String.Compare(datas[0], "[Compute]") == 0)
                 {
@@ -2450,19 +2795,19 @@ namespace _86ME_ver2
 
                     Label equal = new Label();
                     equal.Text = "=";
-                    equal.Top += 5;
-                    equal.Left += 105;
+                    equal.Top += 5 * dpi / 96;
+                    equal.Left += 105 * dpi / 96;
                     equal.Font = new Font("Arial", 14);
-                    equal.Size = new Size(22,22);
+                    equal.Size = new Size(22 * dpi / 96, 22 * dpi / 96);
 
                     RadioButton[] method = new RadioButton[4];
                     for (int i = 0; i < 4; i++)
                     {
                         method[i] = new RadioButton();
                         method[i].Name = i.ToString();
-                        method[i].Top += 5 + i * 25;
-                        method[i].Left += 128;
-                        method[i].Size = new Size(22, 22);
+                        method[i].Top += (5 + i * 25) * dpi / 96;
+                        method[i].Left += 128 * dpi / 96;
+                        method[i].Size = new Size(22 * dpi / 96, 22 * dpi / 96);
                         Framelist.Controls.Add(method[i]);
                     }
                     method[op.form].Checked = true;
@@ -2492,9 +2837,9 @@ namespace _86ME_ver2
                         method[i].CheckedChanged += new EventHandler(operandRadioButton_CheckedChanged);
 
                     MaskedTextBox f4_const = new MaskedTextBox();
-                    f4_const.Size = new Size(100, 22);
-                    f4_const.Top += 80;
-                    f4_const.Left += 150;
+                    f4_const.Size = new Size(100 * dpi / 96, 22 * dpi / 96);
+                    f4_const.Top += 80 * dpi / 96;
+                    f4_const.Left += 150 * dpi / 96;
                     f4_const.Text = op.f4_const.ToString(".0#######");
                     f4_const.KeyPress += new KeyPressEventHandler(floatcheck);
                     f4_const.TextChanged += new EventHandler(OpConst_TextChanged);
@@ -2511,7 +2856,8 @@ namespace _86ME_ver2
 
                     this.hint_richTextBox.Text = Main_lang_dic["hint15"];
                     f4_const.SelectionStart = f4_const.Text.Length;
-                    f4_const.Focus();
+                    //f4_const.Focus();
+                    draw_watermark();
                 }
                 else if (String.Compare(datas[0], "[If]") == 0)
                 {
@@ -2534,34 +2880,34 @@ namespace _86ME_ver2
 
                     Label lstmt = new Label();
                     lstmt.Text = "if (";
-                    lstmt.Top += 10;
-                    lstmt.Left += 5;
+                    lstmt.Top += 10 * dpi / 96;
+                    lstmt.Left += 5 * dpi / 96;
                     lstmt.Font = new Font("Arial", 18);
-                    lstmt.Size = new Size(40, 30);
+                    lstmt.Size = new Size(40 * dpi / 96, 30 * dpi / 96);
 
                     Label rstmt = new Label();
                     rstmt.Text = ")";
-                    rstmt.Top += 10;
-                    rstmt.Left += 360;
+                    rstmt.Top += 10 * dpi / 96;
+                    rstmt.Left += 360 * dpi / 96;
                     rstmt.Font = new Font("Arial", 18);
-                    rstmt.Size = new Size(30, 30);
+                    rstmt.Size = new Size(30 * dpi / 96, 30 * dpi / 96);
 
                     Label gstmt = new Label();
                     gstmt.Text = "goto ";
-                    gstmt.Top += 60;
-                    gstmt.Left += 5;
+                    gstmt.Top += 60 * dpi / 96;
+                    gstmt.Left += 5 * dpi / 96;
                     gstmt.Font = new Font("Arial", 14);
-                    gstmt.Size = new Size(50, 22);
+                    gstmt.Size = new Size(50 * dpi / 96, 22 * dpi / 96);
 
                     RadioButton form1 = new RadioButton();
-                    form1.Top += 5;
-                    form1.Left += 223;
-                    form1.Size = new Size(22, 22);
+                    form1.Top += 5 * dpi / 96;
+                    form1.Left += 223 * dpi / 96;
+                    form1.Size = new Size(22 * dpi / 96, 22 * dpi / 96);
                     form1.Name = "f1";
                     RadioButton form2 = new RadioButton();
-                    form2.Top += 35;
-                    form2.Left += 223;
-                    form2.Size = new Size(22, 22);
+                    form2.Top += 35 * dpi / 96;
+                    form2.Left += 223 * dpi / 96;
+                    form2.Size = new Size(22 * dpi / 96, 22 * dpi / 96);
                     form2.Name = "f2";
                     if (mif.form == 0)
                         form1.Checked = true;
@@ -2578,17 +2924,17 @@ namespace _86ME_ver2
                     setOpVComboBox(right_var, 5, 245, "i2", false);
 
                     MaskedTextBox right_const = new MaskedTextBox();
-                    right_const.Size = new Size(100, 22);
-                    right_const.Top += 35;
-                    right_const.Left += 245;
+                    right_const.Size = new Size(100 * dpi / 96, 22 * dpi / 96);
+                    right_const.Top += 35 * dpi / 96;
+                    right_const.Left += 245 * dpi / 96;
                     right_const.Text = mif.right_const.ToString();
                     right_const.KeyPress += new KeyPressEventHandler(floatcheck);
                     right_const.TextChanged += new EventHandler(ifconstext);
 
                     MaskedTextBox xtextbox = new MaskedTextBox();
-                    xtextbox.Size = new Size(80, 22);
-                    xtextbox.Top += 63;
-                    xtextbox.Left += 60;
+                    xtextbox.Size = new Size(80 * dpi / 96, 22 * dpi / 96);
+                    xtextbox.Top += 63 * dpi / 96;
+                    xtextbox.Left += 60 * dpi / 96;
                     xtextbox.Text = mif.name;
                     xtextbox.TextChanged += new EventHandler(iftext);
                     xtextbox.KeyPress += new KeyPressEventHandler(gototext_KeyPress);
@@ -2610,7 +2956,8 @@ namespace _86ME_ver2
 
                     this.hint_richTextBox.Text = Main_lang_dic["hint16"];
                     xtextbox.SelectionStart = xtextbox.Text.Length;
-                    xtextbox.Focus();
+                    //xtextbox.Focus();
+                    draw_watermark();
                 }
                 last_motionlist_idx = Motionlist.SelectedIndex;
             }
@@ -2639,6 +2986,16 @@ namespace _86ME_ver2
             }
         }
 
+        private void Motionlist_MouseMove(object sender, MouseEventArgs e)
+        {
+            ListBox listBox = (ListBox)sender;
+            int index = listBox.IndexFromPoint(e.Location);
+            if (index != listBox.SelectedIndex)
+            {
+                ttp.Hide(listBox);
+            }
+        }
+
         private void Motionlist_MouseDown(object sender, MouseEventArgs e) // right-click for editing motionlist
         {
             if (e.Button == MouseButtons.Right && MotionCombo.SelectedItem != null)
@@ -2647,17 +3004,22 @@ namespace _86ME_ver2
                 if (Motionlist.SelectedItem == null)
                 {
                     last_motionlist_idx = -1;
+                    /*
+
                     motionToolStripMenuItem.Text = Main_lang_dic["AddNewAction_F"];
                     Motionlist_contextMenuStrip.Items.AddRange(new ToolStripItem[] { motionToolStripMenuItem });
                     Motionlist_contextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler(Motionlistevent);
                     Motionlist_contextMenuStrip.Closed += new ToolStripDropDownClosedEventHandler(Motionlistcloseevent);
                     Motionlist_contextMenuStrip.Show(new Point(Cursor.Position.X, Cursor.Position.Y));
+
                     Framelist.Enabled = false;
+                    */
+                    return;
                 }
                 else if (((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex] is ME_Frame)
                 {
-                    motionToolStripMenuItem.Text = Main_lang_dic["AddNewAction_N"];
-                    Motionlist_contextMenuStrip.Items.AddRange(new ToolStripItem[] { motionToolStripMenuItem });
+                    //motionToolStripMenuItem.Text = Main_lang_dic["AddNewAction_N"];
+                    //Motionlist_contextMenuStrip.Items.AddRange(new ToolStripItem[] { motionToolStripMenuItem });
 
                     if ((((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events.Count - 1) > Motionlist.SelectedIndex)
                         if (((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex + 1] is ME_Frame)
@@ -2674,8 +3036,8 @@ namespace _86ME_ver2
                 }
                 else if (Motionlist.SelectedItem != null)
                 {
-                    motionToolStripMenuItem.Text = Main_lang_dic["AddNewAction_N"];
-                    Motionlist_contextMenuStrip.Items.AddRange(new ToolStripItem[] { motionToolStripMenuItem });
+                    //motionToolStripMenuItem.Text = Main_lang_dic["AddNewAction_N"];
+                    //Motionlist_contextMenuStrip.Items.AddRange(new ToolStripItem[] { motionToolStripMenuItem });
 
                     Motionlist_contextMenuStrip.Items.Add(motionevent[2]);
 
@@ -2723,7 +3085,9 @@ namespace _86ME_ver2
                             for (int j = 0; j < 45; j++)
                                 h.frame[j] = (int)homeframe[j];
                             h.delay = default_delay;
-                            Motionlist.Items.Insert(Motionlist.SelectedIndex + 1, "[Home] " + homecount++);
+                            //Motionlist.Items.Insert(Motionlist.SelectedIndex + 1, "[Home] " + homecount++);
+                            Motionlist.Items.Insert(Motionlist.SelectedIndex + 1, "[Home]" );
+                            homecount++;
                             ((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events.Insert(Motionlist.SelectedIndex + 1, h);
                             Motionlist.SelectedIndex++;
                             break;
@@ -2773,7 +3137,9 @@ namespace _86ME_ver2
                             }
                             else if (((ME_Frame)((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex]).type == 0)
                             {
-                                Motionlist.Items.Insert(Motionlist.SelectedIndex + 1, "[Home] " + homecount++.ToString());
+                                //Motionlist.Items.Insert(Motionlist.SelectedIndex + 1, "[Home] " + homecount++.ToString());
+                                Motionlist.Items.Insert(Motionlist.SelectedIndex + 1, "[Home]");
+                                homecount++;
                                 ((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events.Insert(Motionlist.SelectedIndex + 1, new ME_Frame());
                                 ((ME_Frame)((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex + 1]).type = 0;
                                 Array.Copy(((ME_Frame)((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex]).frame, ((ME_Frame)((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events[Motionlist.SelectedIndex + 1]).frame, 45);
@@ -2801,9 +3167,9 @@ namespace _86ME_ver2
 
         private void Motionlistcloseevent(object sender, EventArgs e)
         {
-            Motionlist_contextMenuStrip.Items.Clear();
-            Motionlist_contextMenuStrip.ItemClicked -= Motionlistevent;
-            Motionlist_contextMenuStrip.Closed -= Motionlistcloseevent;
+            ((ContextMenuStrip)sender).Items.Clear();
+            ((ContextMenuStrip)sender).ItemClicked -= Motionlistevent;
+            ((ContextMenuStrip)sender).Closed -= Motionlistcloseevent;
         }
 
         private void ifToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2870,7 +3236,9 @@ namespace _86ME_ver2
             for (int j = 0; j < 45; j++)
                 h.frame[j] = (int)homeframe[j];
             h.delay = default_delay;
-            Motionlist.Items.Insert(Motionlist.SelectedIndex + 1, "[Home] " + homecount++);
+            //Motionlist.Items.Insert(Motionlist.SelectedIndex + 1, "[Home] " + homecount++);
+            Motionlist.Items.Insert(Motionlist.SelectedIndex + 1, "[Home]");
+            homecount++;
             ((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events.Insert(Motionlist.SelectedIndex + 1, h);
             Motionlist.SelectedIndex++;
         }
@@ -3150,7 +3518,10 @@ namespace _86ME_ver2
                         if (MotionCombo.Items.Count > 0)
                             MotionCombo.SelectedIndex = 0;
                         else
+                        {
                             Framelist.Controls.Clear();
+                            draw_watermark();
+                        }
                     }
                 }
             }
@@ -3665,11 +4036,14 @@ namespace _86ME_ver2
                     }
                 }
             }
+            sync_speed.Enabled = autocheck.Checked;
+            slow.Enabled = autocheck.Checked;
+            fast.Enabled = autocheck.Checked;
         }
 
         private void howToUseToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start("http://www.86duino.com/index.php?p=11544&lang=TW");
+            System.Diagnostics.Process.Start("http://www.86duino.com/index.php?p=11544&lang=" + Main_lang_dic["language"]);
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -3738,8 +4112,9 @@ namespace _86ME_ver2
                 MessageBox.Show(Main_lang_dic["errorMsg16"]);
                 return;
             }
-            FSMGen g = new FSMGen(Motion, offset, ME_Motionlist, gs, compute_var.Count, trigger_cmd, Main_lang_dic);
-            g.generate_ScratchProject();
+            FSMGen g = new FSMGen(Motion, offset, ME_Motionlist, gs, compute_var.Count, trigger_cmd, Main_lang_dic, Robot_pictureBox.Image);
+            g.generate_ScratchProject(develop_mode);
+            draw_background();
             clearTmpData();
         }
 
@@ -3826,7 +4201,7 @@ namespace _86ME_ver2
 
         private void draw_background()
         {
-            if(Motion.picfilename != null)
+            if(Motion.picfilename != null && Robot_pictureBox.Image == null)
             {
                 try
                 {
@@ -3837,7 +4212,106 @@ namespace _86ME_ver2
                     MessageBox.Show(Main_lang_dic["errorMsg17"]);
                 }
             }
+            else if(Robot_pictureBox.Image == null)
+            {
+                try
+                {
+                    Robot_pictureBox.Image = Properties.Resources.default_BG;
+                }
+                catch
+                {
+                    MessageBox.Show(Main_lang_dic["errorMsg17"]);
+                }
+            }
             Framelist.Controls.Add(Robot_pictureBox);
+        }
+        public static Bitmap MakeGrayscale(Bitmap original)
+        {
+            //create a blank bitmap the same size as original
+            Bitmap newBitmap = new Bitmap(original.Width, original.Height);
+
+            //get a graphics object from the new image
+            Graphics g = Graphics.FromImage(newBitmap);
+
+            //create the grayscale ColorMatrix
+            ColorMatrix colorMatrix = new ColorMatrix(
+               new float[][]
+               {
+                 new float[] {.3f, .3f, .3f, 0, 0},
+                 new float[] {.59f, .59f, .59f, 0, 0},
+                 new float[] {.11f, .11f, .11f, 0, 0},
+                 new float[] {0, 0, 0, 1, 0},
+                 new float[] {0, 0, 0, 0, 1}
+               });
+
+            //create some image attributes
+            ImageAttributes attributes = new ImageAttributes();
+
+            //set the color matrix attribute
+            attributes.SetColorMatrix(colorMatrix);
+
+            //draw the original image on the new image
+            //using the grayscale color matrix
+            g.DrawImage(original, new Rectangle(0, 0, original.Width, original.Height),
+               0, 0, original.Width, original.Height, GraphicsUnit.Pixel, attributes);
+
+            //dispose the Graphics object
+            g.Dispose();
+            return newBitmap;
+        }
+        private void draw_watermark()
+        {
+            if (Robot_pictureBox.Image != null && Robot_watermark.Image == null)
+            {
+                try
+                {
+
+                    /*
+                    Bitmap bmp = new Bitmap(Robot_pictureBox.Image);
+                    int scale_down = 5;
+
+                    Bitmap bmp_m = new Bitmap(bmp.Width/ scale_down, bmp.Height/ scale_down);
+
+                    System.Drawing.Color pixelColor;
+                    byte gray;
+                    for (int x = 0; x < bmp_m.Width; x++)
+                        for (int y = 0; y < bmp_m.Height; y++)
+                        {
+                            pixelColor = bmp.GetPixel(x * scale_down, y * scale_down);
+                            gray = (byte)((pixelColor.R + pixelColor.G + pixelColor.B) / 3);
+                            bmp_m.SetPixel(x, y, System.Drawing.Color.FromArgb(gray, gray, gray));
+                        }
+                    Robot_watermark.Image = bmp_m;
+                    */
+                    Robot_watermark.Image = MakeGrayscale(new Bitmap(Robot_pictureBox.Image));
+                }
+                catch
+                {
+                    MessageBox.Show(Main_lang_dic["errorMsg17"]);
+                }
+            }
+            else if (Robot_watermark.Image == null)
+            {
+                try
+                {
+                    Bitmap bmp = Properties.Resources.default_BG;
+                    for (int x = 0; x < bmp.Width; x++)
+                    {
+                        for (int y = 0; y < bmp.Height; y++)
+                        {
+                            Color pixelColor = bmp.GetPixel(x, y);
+                            int gray = (pixelColor.R + pixelColor.G + pixelColor.B) / 3;
+                            bmp.SetPixel(x, y, Color.FromArgb(gray, gray, gray));
+                        }
+                    }
+                    Robot_watermark.Image = bmp;
+                }
+                catch
+                {
+                    MessageBox.Show(Main_lang_dic["errorMsg17"]);
+                }
+            }
+            Framelist.Controls.Add(Robot_watermark);
         }
 
         private void update_motionlist()
@@ -3867,7 +4341,8 @@ namespace _86ME_ver2
                             }
                             else if (((ME_Frame)m.Events[j]).type == 0)
                             {
-                                Motionlist.Items.Add("[Home] " + homecount);
+                                //Motionlist.Items.Add("[Home] " + homecount);
+                                Motionlist.Items.Add("[Home]");
                                 homecount++;
                                 for (int k = 0; k < 45; k++)
                                 {
@@ -4218,6 +4693,8 @@ namespace _86ME_ver2
             ttp.SetToolTip(motorRelease, Main_lang_dic["motorRelease_ToolTip"]);
             ttp.SetToolTip(move_down, Main_lang_dic["move_down_ToolTip"]);
             ttp.SetToolTip(move_up, Main_lang_dic["move_up_ToolTip"]);
+            ttp.SetToolTip(ActionAdd, Main_lang_dic["Action_add_ToolTip"]);
+            ttp.SetToolTip(ActionDel, Main_lang_dic["Action_del_ToolTip"]);
             ttp.SetToolTip(NewMotion, Main_lang_dic["NewMotion_ToolTip"]);
             ttp.SetToolTip(saveFrame, Main_lang_dic["saveFrame_ToolTip"]);
             ttp.SetToolTip(sync_speed, Main_lang_dic["sync_speed_ToolTip"]);
@@ -4431,6 +4908,56 @@ namespace _86ME_ver2
                     ret += (curr_num - prev_num);
             }
             return ret;
+        }
+        
+
+        private void ActionAdd_Click(object sender, EventArgs e)
+        {
+
+            last_motionlist_idx = -1;
+            //motionToolStripMenuItem.Text = Main_lang_dic["AddNewAction_F"];
+
+            Motionlist_contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.frameToolStripMenuItem,
+            this.delayToolStripMenuItem,
+            this.homeToolStripMenuItem,
+            this.releaseToolStripMenuItem,
+            this.Add1ToolStripSeparator,
+            this.flagToolStripMenuItem,
+            this.gotoToolStripMenuItem,
+            this.Add2ToolStripSeparator,
+            this.ifToolStripMenuItem,
+            this.operandToolStripMenuItem,
+            this.Add3ToolStripSeparator,
+            this.triggerToolStripMenuItem});
+            Motionlist_contextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler(Motionlistevent);
+            Motionlist_contextMenuStrip.Closed += new ToolStripDropDownClosedEventHandler(Motionlistcloseevent);
+            Motionlist_contextMenuStrip.Show(new Point(Cursor.Position.X, Cursor.Position.Y));
+            Framelist.Enabled = false;
+
+        }
+
+        private void MotionProperty_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ActionDel_Click(object sender, EventArgs e)
+        {
+            if (Motionlist.SelectedItem != null)
+            {
+
+                ((ME_Motion)ME_Motionlist[MotionCombo.SelectedIndex]).Events.RemoveAt(Motionlist.SelectedIndex);
+                Motionlist.Items.Remove(Motionlist.SelectedItem);
+                delaytext.Enabled = false;
+                delaytext.Text = "";
+                capturebutton.Enabled = false;
+                autocheck.Enabled = false;
+                Framelist.Controls.Clear();
+                Framelist.Enabled = false;
+                update_motionlist();
+                draw_watermark();
+            }
         }
 
         private string getComputeVar(int n, bool isOpLeft)

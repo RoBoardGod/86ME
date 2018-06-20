@@ -1,50 +1,35 @@
-/*
- * Firmata is a generic protocol for communicating with microcontrollers
- * from software on a host computer. It is intended to work with
- * any host computer software package.
- *
- * To download a host software package, please clink on the following link
- * to open the download page in your default browser.ser
- *
- * http://firmata.org/wiki/Download
- */
-
-/*
- Copyright (C) 2006-2008 Hans-Christoph Steiner.  All rights reserved.
- Copyright (C) 2010-2011 Paul Stoffregen.  All rights reserved.
- Copyright (C) 2009 Shigeru Kobayashi.  All rights reserved.
- Copyright (C) 2009-2011 Jeff Hoefs.  All rights reserved.
- Copyright (C) 2013-2016 Alan Yorinks. All rights reserved.
-
-
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 2.1 of the License, or (at your option) any later version.
-
- See file LICENSE.txt for further informations on licensing terms.
-
- formatted using the GNU C formatting and indenting
- */
- 
- /* This sketch provides additional functionality to StandardFirmata. 
-    It provides support for:
-    Tone
-    Stepper
-    NewPing
-    Encoder - Note that the encoder works for an Arduino UNO and does not function
-              with a Leonardo. It may not work for others boards as well.
-
-/*
- * TODO: use Program Control to load stored profiles from EEPROM
- */
-
 #include <FirmataPlus86.h>
+
+#define CONNECT_86DUINO_METHOD 0 // 0: USB Serial 1: BlueTooth 2: Arduino WiFi Shield 3: Ethernet 4: ESP8266 WiFi 5: ESP8266 AP
+
+char* projectName = "Hello, 86Duino";
+char* _ssid = "your SSID";
+char* _password = "your password"; // If it is ESP8266 AP mode, the password can not be shorter that 8 chars.
+#define BT_ESP8266_Serial         Serial1
+#define BT_ESP8266_Serial_Baud    9600
+
+#if CONNECT_86DUINO_METHOD == 2 // Arduino WiFi Shield
+    bool _wep = false;
+    IPAddress _ip(0, 0, 0, 0);
+#elif CONNECT_86DUINO_METHOD == 3 // Ethernet
+    #define ETHERNET_DHCP
+    #ifndef ETHERNET_DHCP
+        IPAddress localIP(192, 168, 4, 100);
+        IPAddress subnet(255, 255, 240, 0);
+        IPAddress dnsserver(192, 168, 1, 1);
+        IPAddress gateway(192, 168, 1, 1);
+    #endif
+#elif CONNECT_86DUINO_METHOD == 4 || CONNECT_86DUINO_METHOD == 5 // ESP8266
+    int ch_pd_pin = 10;
+    uint8_t _chl = 11; // channel ID (only for ESP8266 AP mode)
+    uint8_t _ecn = 4; // encryption method (only for ESP8266 AP mode)
+#endif
+//////////////////////////////////////////////////////////////////////////////////
+
 #include <avr/wdt.h>
 // 86ME include lib
 
 // the minimum interval for sampling analog input
-#define BT_Serial Serial1
 #define MINIMUM_SAMPLING_INTERVAL 1
 
 #define REGISTER_NOT_SPECIFIED -1
@@ -55,6 +40,8 @@
  * GLOBAL VARIABLES
  *============================================================================*/
  
+
+bool checkActiveStart = false;
 /* analog inputs */
 int analogInputsToReport = 0; // bitwise array to store pin reporting
 
@@ -87,26 +74,14 @@ unsigned long start_waiting_time;
 int numLoops = 0 ;
 int pingLoopCounter = 0 ;
 
-int numActiveSonars = 0 ; // number of sonars attached
-uint8_t sonarPinNumbers[MAX_SONARS] ;
-int nextSonar = 0 ; // index into sonars[] for next device
-
-uint8_t sonarTriggerPin;
-uint8_t sonarEchoPin ;
-uint8_t currentSonar = 0;            // Keeps track of which sensor is active.
-
 uint8_t pingInterval = 33 ;  // Milliseconds between sensor pings (29ms is about the min to avoid
 // cross- sensor echo).
-byte sonarMSB, sonarLSB ;
 
 #ifdef FIRMATA_SERIAL_FEATURE
 SerialFirmata serialFeature;
 #endif
 
 // 86ME global variable
-int busy_id;
-int motion_id;
-int motion_times;
 
 /*==============================================================================
  * CLASSES
@@ -126,7 +101,6 @@ int motion_times;
 
 // 86ME functions
 
-Robot86ME robot;
 
 void outputPort(byte portNumber, byte portValue, byte forceSend)
 {
@@ -346,6 +320,9 @@ void sysexCallback(byte command, byte argc, byte *argv)
   
   long angle;
   long msec;
+  
+  byte sendBuff[512];
+  int i;
 
   switch (command) {
     
@@ -368,78 +345,84 @@ void sysexCallback(byte command, byte argc, byte *argv)
       }
       break;
     case CAPABILITY_QUERY:
-      Firmata.write(START_SYSEX);
-      Firmata.write(CAPABILITY_RESPONSE);
+      for (i=0; i<sizeof(sendBuff); i++) sendBuff[i] = 0;
+      
+      sendBuff[0] = START_SYSEX;
+      sendBuff[1] = CAPABILITY_RESPONSE;
+      i = 2;
       for (byte pin = 0; pin < TOTAL_PINS; pin++) {
         if (IS_PIN_DIGITAL(pin)) {
-          Firmata.write((byte)INPUT);
-          Firmata.write(1);
-          Firmata.write((byte)PIN_MODE_PULLUP);
-          Firmata.write(1);
-          Firmata.write((byte)OUTPUT);
-          Firmata.write(1);
+          sendBuff[i++] = ((byte)INPUT);
+          sendBuff[i++] = 1;
+          sendBuff[i++] = ((byte)PIN_MODE_PULLUP);
+          sendBuff[i++] = 1;
+          sendBuff[i++] = ((byte)OUTPUT);
+          sendBuff[i++] = 1;
         }
         if (IS_PIN_ANALOG(pin)) {
-          Firmata.write(PIN_MODE_ANALOG);
-          Firmata.write(10); // 10 = 10-bit resolution
+          sendBuff[i++] = PIN_MODE_ANALOG;
+          sendBuff[i++] = 10; // 10 = 10-bit resolution
         }
         if (IS_PIN_PWM(pin)) {
-          Firmata.write(PIN_MODE_PWM);
-          Firmata.write(DEFAULT_PWM_RESOLUTION);
+          sendBuff[i++] = PIN_MODE_PWM;
+          sendBuff[i++] = DEFAULT_PWM_RESOLUTION;
         }
         if (IS_PIN_DIGITAL(pin)) {
-          Firmata.write(PIN_MODE_SERVO);
-          Firmata.write(14);
+          sendBuff[i++] = PIN_MODE_SERVO;
+          sendBuff[i++] = 14;
+        }
+        if (IS_PIN_I2C(pin)) {
+          sendBuff[i++] = PIN_MODE_I2C;
+          sendBuff[i++] = 1;  // TODO: could assign a number to map to SCL or SDA
         }
 #ifdef FIRMATA_SERIAL_FEATURE
         serialFeature.handleCapability(pin);
 #endif
-        Firmata.write(127);
+        sendBuff[i++] = 127;
       }
-      Firmata.write(END_SYSEX);
+      sendBuff[i++] = END_SYSEX;
+      Firmata.write((const uint8_t*)sendBuff, i);
       break;
     case PIN_STATE_QUERY:
       if (argc > 0) {
+        for (i=0; i<sizeof(sendBuff); i++) sendBuff[i] = 0;
+        
         byte pin = argv[0];
-        Firmata.write(START_SYSEX);
-        Firmata.write(PIN_STATE_RESPONSE);
-        Firmata.write(pin);
+        sendBuff[0] = START_SYSEX;
+        sendBuff[1] = PIN_STATE_RESPONSE;
+        sendBuff[2] = pin;
+        i = 3;
         if (pin < TOTAL_PINS) {
-          Firmata.write(Firmata.getPinMode(pin));
-          Firmata.write((byte)Firmata.getPinState(pin) & 0x7F);
-          if (Firmata.getPinState(pin) & 0xFF80) Firmata.write((byte)(Firmata.getPinState(pin) >> 7) & 0x7F);
-          if (Firmata.getPinState(pin) & 0xC000) Firmata.write((byte)(Firmata.getPinState(pin) >> 14) & 0x7F);
+          sendBuff[i++] = Firmata.getPinMode(pin);
+          sendBuff[i++] = (byte)Firmata.getPinState(pin) & 0x7F;
+          if (Firmata.getPinState(pin) & 0xFF80) sendBuff[i++] = (byte)(Firmata.getPinState(pin) >> 7) & 0x7F;
+          if (Firmata.getPinState(pin) & 0xC000) sendBuff[i++] = (byte)(Firmata.getPinState(pin) >> 14) & 0x7F;
         }
-        Firmata.write(END_SYSEX);
+        sendBuff[i++] = END_SYSEX;
+        Firmata.write((const uint8_t*)sendBuff, i);
       }
       break;
     case ANALOG_MAPPING_QUERY:
-      Firmata.write(START_SYSEX);
-      Firmata.write(ANALOG_MAPPING_RESPONSE);
+      for (i=0; i<sizeof(sendBuff); i++) sendBuff[i] = 0;
+      sendBuff[0] = START_SYSEX;
+      sendBuff[1] = ANALOG_MAPPING_RESPONSE;
+      i = 2;
       for (byte pin = 0; pin < TOTAL_PINS; pin++) {
-        Firmata.write(IS_PIN_ANALOG(pin) ? PIN_TO_ANALOG(pin) : 127);
+        sendBuff[i++] = (IS_PIN_ANALOG(pin) ? PIN_TO_ANALOG(pin) : 127);
       }
-      Firmata.write(END_SYSEX);
+      sendBuff[i++] = END_SYSEX;
+      Firmata.write((const uint8_t*)sendBuff, i);
       break;
-
-  case SERIAL_MESSAGE:
+    case SERIAL_MESSAGE:
 #ifdef FIRMATA_SERIAL_FEATURE
       serialFeature.handleSysex(command, argc, argv);
 #endif
       break;
+    case CHECK_86DUINO_ACTIVE:
+      checkActiveStart = true;
+      break;
 
-    case PERFORM_MOTION:
-      busy_id = (int)argv[0] | ((int)argv[1] << 7);
-      motion_id = (int)argv[2] | ((int)argv[3] << 7);
-      motion_times = (int)argv[4] | ((int)argv[5] << 7);
-      // call motions here
-      Firmata.write(START_SYSEX);
-      Firmata.write(PERFORM_MOTION_RESPONSE);
-      Firmata.write(busy_id & 0x7F);
-      Firmata.write((busy_id >> 7) & 0x7F);
-      Firmata.write(99);
-      Firmata.write(END_SYSEX);
-    break;
+    // 86ME perform motions case
   }
 }
 
@@ -491,6 +474,24 @@ void systemResetCallback()
 
 void setup()
 {
+  #if CONNECT_86DUINO_METHOD == 0
+    Firmata.begin(57600);
+  #elif CONNECT_86DUINO_METHOD == 1
+    Firmata.beginBlueTooth(BT_ESP8266_Serial, BT_ESP8266_Serial_Baud);
+  #elif CONNECT_86DUINO_METHOD == 2
+    Firmata.beginWiFiShield(projectName, 2000, _ssid, _password, _wep, _ip);
+  #elif CONNECT_86DUINO_METHOD == 3
+    #ifdef ETHERNET_DHCP
+      Firmata.beginEthernet(projectName, 2000);
+    #else
+      Firmata.beginEthernet(projectName, 2000, localIP, subnet, dnsserver, gateway);
+    #endif
+  #elif CONNECT_86DUINO_METHOD == 4
+      Firmata.beginESP8266(projectName, 2000, BT_ESP8266_Serial, BT_ESP8266_Serial_Baud, ch_pd_pin, _ssid, _password);
+  #elif CONNECT_86DUINO_METHOD == 5
+      Firmata.beginESP8266_AP(projectName, 2000, BT_ESP8266_Serial, BT_ESP8266_Serial_Baud, ch_pd_pin, _ssid, _password, _chl, _ecn);
+  #endif
+  
   Firmata.setFirmwareVersion(FIRMATA_FIRMWARE_MAJOR_VERSION, FIRMATA_FIRMWARE_MINOR_VERSION);
 
   Firmata.attach(DIGITAL_MESSAGE, digitalWriteCallback);
@@ -501,11 +502,32 @@ void setup()
   Firmata.attach(START_SYSEX, sysexCallback);
   Firmata.attach(SYSTEM_RESET, systemResetCallback);
 
-  robot.begin(false);
-  BT_Serial.begin(9600);
-  Firmata.begin(BT_Serial);
-
+  #if CONNECT_86DUINO_METHOD == 2
+    pinMode(PIN_TO_DIGITAL(4), OUTPUT);    // switch off SD card bypassing Firmata
+    digitalWrite(PIN_TO_DIGITAL(4), HIGH); // SS is active low;
+  #endif
+  // 86ME setup begin
   systemResetCallback();  // reset to default config
+}
+
+void check_localIP()
+{
+    static bool serial_monitor_open = false;
+    if (Serial && serial_monitor_open == false)
+    {
+        serial_monitor_open = true;
+        Serial.print("IP : ");
+        Serial.println(Firmata.getLocalIP());
+        Serial.print("Gateway : ");
+        Serial.println(Firmata.getGatewayIP());
+        Serial.print("SubnetMask : ");
+        Serial.println(Firmata.getSubnetMask());
+    }
+    
+    if (!Serial && serial_monitor_open == true)
+    {
+        serial_monitor_open = false;
+    }
 }
 
 /*==============================================================================
@@ -516,6 +538,10 @@ void loop()
   byte pin, analogPin;
   int pingResult = 0;
 
+  #if CONNECT_86DUINO_METHOD == 2 || CONNECT_86DUINO_METHOD == 3 || CONNECT_86DUINO_METHOD == 4 || CONNECT_86DUINO_METHOD == 5
+    check_localIP();
+  #endif
+  
   /* DIGITALREAD - as fast as possible, check for changes and output them to the
    * FTDI buffer using Serial.print()  */
   checkDigitalInputs();
@@ -550,6 +576,14 @@ void loop()
          while(1)
             ;
       }
+    }
+    if (checkActiveStart == true)
+    {
+	  Firmata.write(START_SYSEX);
+	  Firmata.write(_86DUINO_RESPONSE) ;
+	  Firmata.write(0x5A)  ;
+	  Firmata.write(END_SYSEX);
+	  checkActiveStart = false;
     }
   }
 }

@@ -172,22 +172,37 @@
   <data name="remove" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\icons\remove.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="FirmataPlus" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\FirmataPlus.ino;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  <data name="sb2ProjectJson" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\project.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="s2a_fm" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\s2a_fm.py;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;big5</value>
+  </data>
+  <data name="FirmataPlusAll" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\firmataplusall.ino;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;big5</value>
   </data>
   <data name="scratch_command_handlers" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\scratch_command_handlers.py;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\Resources\scratch_command_handlers.py;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;big5</value>
+  </data>
+  <data name="scratch_http_server" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\scratch_http_server.py;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;big5</value>
   </data>
   <data name="sb2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\sb2.sb2;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="sb2ProjectJson" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\project.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  <data name="default_BG" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\default_BG.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="FirmataPlusBluetooth86" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\FirmataPlusBluetooth86.ino;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;big5</value>
+  <data name="addmotion" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\icons\addmotion.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="scratch_http_server" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\scratch_http_server.py;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;big5</value>
+  <data name="delmotion" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\icons\delmotion.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="downmotion" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\icons\downmotion.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="upmotion" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\icons\upmotion.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

@@ -46,6 +46,7 @@
     <Prefer32Bit>false</Prefer32Bit>
     <CodeAnalysisRuleSet>
     </CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -79,6 +80,11 @@
     </Compile>
     <Compile Include="about.Designer.cs">
       <DependentUpon>about.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ScratchProperty.cs">
       <SubType>Form</SubType>
@@ -143,14 +149,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="NewMotion.resx">
       <DependentUpon>NewMotion.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Progress.resx">
       <DependentUpon>Progress.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="SetCommand.resx">
       <DependentUpon>SetCommand.cs</DependentUpon>
@@ -158,11 +165,6 @@
     <EmbeddedResource Include="SetForm.resx">
       <DependentUpon>SetForm.cs</DependentUpon>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <EmbeddedResource Include="SetVariable.resx">
       <DependentUpon>SetVariable.cs</DependentUpon>
     </EmbeddedResource>
@@ -187,6 +189,7 @@
     <Compile Include="SetForm.Designer.cs">
       <DependentUpon>SetForm.cs</DependentUpon>
     </Compile>
+    <None Include="Resources\FirmataPlusAll.ino" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -223,12 +226,17 @@
   <ItemGroup>
     <Content Include="icons\86Duino.ico" />
     <Content Include="icons\add.png" />
+    <None Include="icons\upmotion.png" />
+    <None Include="Resources\default_BG.jpg" />
+    <None Include="Resources\s2a_fm.py" />
     <None Include="Resources\scratch_http_server.py" />
-    <None Include="Resources\FirmataPlusBluetooth86.ino" />
-    <None Include="Resources\project.json" />
-    <None Include="Resources\sb2.sb2" />
     <None Include="Resources\scratch_command_handlers.py" />
+    <None Include="Resources\sb2.sb2" />
+    <None Include="Resources\project.json" />
     <None Include="icons\add2.png" />
+    <None Include="icons\addmotion.png" />
+    <None Include="icons\delmotion.png" />
+    <None Include="icons\downmotion.png" />
     <Content Include="icons\gear.png" />
     <None Include="icons\modify.png" />
     <Content Include="icons\off.png" />
@@ -238,7 +246,6 @@
     <Content Include="icons\s.png" />
     <None Include="icons\load_frame.png" />
     <None Include="icons\save_frame.png" />
-    <None Include="Resources\FirmataPlus.ino" />
     <None Include="Resources\hand_open.cur" />
     <None Include="Resources\hand_close.cur" />
     <None Include="icons\stop.png" />

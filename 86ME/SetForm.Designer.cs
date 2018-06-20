@@ -38,9 +38,9 @@
             // button2
             // 
             this.button2.Cursor = System.Windows.Forms.Cursors.Default;
-            this.button2.Location = new System.Drawing.Point(57, 65);
+            this.button2.Location = new System.Drawing.Point(26, 64);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(112, 36);
+            this.button2.Size = new System.Drawing.Size(159, 36);
             this.button2.TabIndex = 1;
             this.button2.Text = "Start";
             this.button2.UseVisualStyleBackColor = true;
@@ -48,7 +48,7 @@
             // 
             // ComboBox0
             // 
-            this.ComboBox0.Font = new System.Drawing.Font("PMingLiU", 14F);
+            this.ComboBox0.Font = new System.Drawing.Font("新細明體", 14F);
             this.ComboBox0.FormattingEnabled = true;
             this.ComboBox0.Items.AddRange(new object[] {
             "--auto--",
@@ -64,14 +64,14 @@
             this.textBox1.Location = new System.Drawing.Point(26, 9);
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(170, 13);
+            this.textBox1.Size = new System.Drawing.Size(210, 15);
             this.textBox1.TabIndex = 4;
-            this.textBox1.Text = "Select the COM port 86Duino used:";
+            this.textBox1.Text = "Select the COM port which 86Duino uses:";
             // 
             // Exit
             // 
             this.Exit.Cursor = System.Windows.Forms.Cursors.Default;
-            this.Exit.Location = new System.Drawing.Point(175, 65);
+            this.Exit.Location = new System.Drawing.Point(191, 64);
             this.Exit.Name = "Exit";
             this.Exit.Size = new System.Drawing.Size(47, 36);
             this.Exit.TabIndex = 5;
@@ -81,9 +81,10 @@
             // 
             // SetForm
             // 
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(259, 104);
+            this.ClientSize = new System.Drawing.Size(259, 112);
             this.ControlBox = false;
             this.Controls.Add(this.Exit);
             this.Controls.Add(this.textBox1);
@@ -91,8 +92,8 @@
             this.Controls.Add(this.button2);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(275, 143);
-            this.MinimumSize = new System.Drawing.Size(275, 143);
+            this.MaximumSize = new System.Drawing.Size(275, 150);
+            this.MinimumSize = new System.Drawing.Size(275, 150);
             this.Name = "SetForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "86ME";

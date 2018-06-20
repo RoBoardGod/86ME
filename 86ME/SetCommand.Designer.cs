@@ -171,7 +171,7 @@
             // 
             // Cancel
             // 
-            this.Cancel.Location = new System.Drawing.Point(657, 636);
+            this.Cancel.Location = new System.Drawing.Point(657, 632);
             this.Cancel.Name = "Cancel";
             this.Cancel.Size = new System.Drawing.Size(75, 23);
             this.Cancel.TabIndex = 14;
@@ -181,7 +181,7 @@
             // 
             // OKButton
             // 
-            this.OKButton.Location = new System.Drawing.Point(572, 636);
+            this.OKButton.Location = new System.Drawing.Point(572, 632);
             this.OKButton.Name = "OKButton";
             this.OKButton.Size = new System.Drawing.Size(75, 23);
             this.OKButton.TabIndex = 13;
@@ -194,7 +194,7 @@
             this.nameLabel.AutoSize = true;
             this.nameLabel.Location = new System.Drawing.Point(12, 21);
             this.nameLabel.Name = "nameLabel";
-            this.nameLabel.Size = new System.Drawing.Size(59, 13);
+            this.nameLabel.Size = new System.Drawing.Size(55, 12);
             this.nameLabel.TabIndex = 12;
             this.nameLabel.Text = "Name:   c_";
             // 
@@ -202,7 +202,7 @@
             // 
             this.nameMaskedTextBox.Location = new System.Drawing.Point(71, 18);
             this.nameMaskedTextBox.Name = "nameMaskedTextBox";
-            this.nameMaskedTextBox.Size = new System.Drawing.Size(185, 20);
+            this.nameMaskedTextBox.Size = new System.Drawing.Size(185, 22);
             this.nameMaskedTextBox.TabIndex = 11;
             // 
             // CmdListView
@@ -293,7 +293,7 @@
             this.ESP8266CHPDCombo.FormattingEnabled = true;
             this.ESP8266CHPDCombo.Location = new System.Drawing.Point(81, 88);
             this.ESP8266CHPDCombo.Name = "ESP8266CHPDCombo";
-            this.ESP8266CHPDCombo.Size = new System.Drawing.Size(78, 21);
+            this.ESP8266CHPDCombo.Size = new System.Drawing.Size(78, 20);
             this.ESP8266CHPDCombo.TabIndex = 10;
             this.ESP8266CHPDCombo.SelectedIndexChanged += new System.EventHandler(this.ESP8266CHPDCombo_SelectedIndexChanged);
             // 
@@ -302,7 +302,7 @@
             this.ESP8266CHPDLabel.AutoSize = true;
             this.ESP8266CHPDLabel.Location = new System.Drawing.Point(14, 91);
             this.ESP8266CHPDLabel.Name = "ESP8266CHPDLabel";
-            this.ESP8266CHPDLabel.Size = new System.Drawing.Size(46, 13);
+            this.ESP8266CHPDLabel.Size = new System.Drawing.Size(44, 12);
             this.ESP8266CHPDLabel.TabIndex = 11;
             this.ESP8266CHPDLabel.Text = "CH_PD:";
             // 
@@ -315,7 +315,7 @@
             "Continuous"});
             this.ESP8266ModeCombo.Location = new System.Drawing.Point(205, 30);
             this.ESP8266ModeCombo.Name = "ESP8266ModeCombo";
-            this.ESP8266ModeCombo.Size = new System.Drawing.Size(98, 21);
+            this.ESP8266ModeCombo.Size = new System.Drawing.Size(98, 20);
             this.ESP8266ModeCombo.TabIndex = 9;
             this.ESP8266ModeCombo.SelectedIndexChanged += new System.EventHandler(this.ESP8266ModeCombo_SelectedIndexChanged);
             // 
@@ -324,7 +324,7 @@
             this.ESP8266ModeLabel.AutoSize = true;
             this.ESP8266ModeLabel.Location = new System.Drawing.Point(166, 34);
             this.ESP8266ModeLabel.Name = "ESP8266ModeLabel";
-            this.ESP8266ModeLabel.Size = new System.Drawing.Size(37, 13);
+            this.ESP8266ModeLabel.Size = new System.Drawing.Size(35, 12);
             this.ESP8266ModeLabel.TabIndex = 8;
             this.ESP8266ModeLabel.Text = "Mode:";
             // 
@@ -340,7 +340,7 @@
             "115200"});
             this.ESP8266BaudCombo.Location = new System.Drawing.Point(81, 59);
             this.ESP8266BaudCombo.Name = "ESP8266BaudCombo";
-            this.ESP8266BaudCombo.Size = new System.Drawing.Size(78, 21);
+            this.ESP8266BaudCombo.Size = new System.Drawing.Size(78, 20);
             this.ESP8266BaudCombo.TabIndex = 7;
             this.ESP8266BaudCombo.SelectedIndexChanged += new System.EventHandler(this.ESP8266BaudCombo_SelectedIndexChanged);
             // 
@@ -349,7 +349,7 @@
             this.ESP8266BaudLabel.AutoSize = true;
             this.ESP8266BaudLabel.Location = new System.Drawing.Point(14, 62);
             this.ESP8266BaudLabel.Name = "ESP8266BaudLabel";
-            this.ESP8266BaudLabel.Size = new System.Drawing.Size(61, 13);
+            this.ESP8266BaudLabel.Size = new System.Drawing.Size(57, 12);
             this.ESP8266BaudLabel.TabIndex = 6;
             this.ESP8266BaudLabel.Text = "Baud Rate:";
             // 
@@ -363,7 +363,7 @@
             "Serial3"});
             this.ESP8266PortCombo.Location = new System.Drawing.Point(228, 59);
             this.ESP8266PortCombo.Name = "ESP8266PortCombo";
-            this.ESP8266PortCombo.Size = new System.Drawing.Size(75, 21);
+            this.ESP8266PortCombo.Size = new System.Drawing.Size(75, 20);
             this.ESP8266PortCombo.TabIndex = 4;
             this.ESP8266PortCombo.SelectedIndexChanged += new System.EventHandler(this.ESP8266PortCombo_SelectedIndexChanged);
             // 
@@ -372,7 +372,7 @@
             this.ESP8266PortLabel.AutoSize = true;
             this.ESP8266PortLabel.Location = new System.Drawing.Point(165, 62);
             this.ESP8266PortLabel.Name = "ESP8266PortLabel";
-            this.ESP8266PortLabel.Size = new System.Drawing.Size(57, 13);
+            this.ESP8266PortLabel.Size = new System.Drawing.Size(53, 12);
             this.ESP8266PortLabel.TabIndex = 5;
             this.ESP8266PortLabel.Text = "Used Port:";
             // 
@@ -381,7 +381,7 @@
             this.ESP8266KeyLabel.AutoSize = true;
             this.ESP8266KeyLabel.Location = new System.Drawing.Point(14, 33);
             this.ESP8266KeyLabel.Name = "ESP8266KeyLabel";
-            this.ESP8266KeyLabel.Size = new System.Drawing.Size(31, 13);
+            this.ESP8266KeyLabel.Size = new System.Drawing.Size(30, 12);
             this.ESP8266KeyLabel.TabIndex = 4;
             this.ESP8266KeyLabel.Text = "Key: ";
             // 
@@ -390,7 +390,7 @@
             this.ESP8266KeyText.Location = new System.Drawing.Point(49, 31);
             this.ESP8266KeyText.MaxLength = 20;
             this.ESP8266KeyText.Name = "ESP8266KeyText";
-            this.ESP8266KeyText.Size = new System.Drawing.Size(110, 20);
+            this.ESP8266KeyText.Size = new System.Drawing.Size(110, 22);
             this.ESP8266KeyText.TabIndex = 0;
             this.ESP8266KeyText.TextChanged += new System.EventHandler(this.ESP8266KeyText_TextChanged);
             this.ESP8266KeyText.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ESP8266_KeyPress);
@@ -435,7 +435,7 @@
             // 
             this.analogValueText.Location = new System.Drawing.Point(205, 18);
             this.analogValueText.Name = "analogValueText";
-            this.analogValueText.Size = new System.Drawing.Size(98, 20);
+            this.analogValueText.Size = new System.Drawing.Size(98, 22);
             this.analogValueText.TabIndex = 43;
             this.analogValueText.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.analogValueText.TextChanged += new System.EventHandler(this.analogValueText_Changed);
@@ -454,7 +454,7 @@
             "<"});
             this.analogCondCombo.Location = new System.Drawing.Point(106, 18);
             this.analogCondCombo.Name = "analogCondCombo";
-            this.analogCondCombo.Size = new System.Drawing.Size(53, 21);
+            this.analogCondCombo.Size = new System.Drawing.Size(53, 20);
             this.analogCondCombo.TabIndex = 10;
             this.analogCondCombo.SelectedIndexChanged += new System.EventHandler(this.analogCondCombo_SelectedIndexChanged);
             // 
@@ -463,7 +463,7 @@
             this.analogValueLabel.AutoSize = true;
             this.analogValueLabel.Location = new System.Drawing.Point(165, 21);
             this.analogValueLabel.Name = "analogValueLabel";
-            this.analogValueLabel.Size = new System.Drawing.Size(37, 13);
+            this.analogValueLabel.Size = new System.Drawing.Size(35, 12);
             this.analogValueLabel.TabIndex = 11;
             this.analogValueLabel.Text = "Value:";
             // 
@@ -472,7 +472,7 @@
             this.analogPinLabel.AutoSize = true;
             this.analogPinLabel.Location = new System.Drawing.Point(14, 21);
             this.analogPinLabel.Name = "analogPinLabel";
-            this.analogPinLabel.Size = new System.Drawing.Size(25, 13);
+            this.analogPinLabel.Size = new System.Drawing.Size(23, 12);
             this.analogPinLabel.TabIndex = 1;
             this.analogPinLabel.Text = "Pin:";
             // 
@@ -490,7 +490,7 @@
             "A6"});
             this.analogPinCombo.Location = new System.Drawing.Point(48, 18);
             this.analogPinCombo.Name = "analogPinCombo";
-            this.analogPinCombo.Size = new System.Drawing.Size(52, 21);
+            this.analogPinCombo.Size = new System.Drawing.Size(52, 20);
             this.analogPinCombo.TabIndex = 0;
             this.analogPinCombo.SelectedIndexChanged += new System.EventHandler(this.analogPinCombo_SelectedIndexChanged);
             // 
@@ -532,9 +532,9 @@
             // 
             // getAccData
             // 
-            this.getAccData.Location = new System.Drawing.Point(182, 23);
+            this.getAccData.Location = new System.Drawing.Point(203, 32);
             this.getAccData.Name = "getAccData";
-            this.getAccData.Size = new System.Drawing.Size(121, 80);
+            this.getAccData.Size = new System.Drawing.Size(100, 60);
             this.getAccData.TabIndex = 42;
             this.getAccData.Text = "Auto Detect";
             this.getAccData.UseVisualStyleBackColor = true;
@@ -545,7 +545,7 @@
             this.accDurationUnit.AutoSize = true;
             this.accDurationUnit.Location = new System.Drawing.Point(182, 115);
             this.accDurationUnit.Name = "accDurationUnit";
-            this.accDurationUnit.Size = new System.Drawing.Size(20, 13);
+            this.accDurationUnit.Size = new System.Drawing.Size(18, 12);
             this.accDurationUnit.TabIndex = 14;
             this.accDurationUnit.Text = "ms";
             // 
@@ -553,7 +553,7 @@
             // 
             this.accDurationText.Location = new System.Drawing.Point(70, 112);
             this.accDurationText.Name = "accDurationText";
-            this.accDurationText.Size = new System.Drawing.Size(106, 20);
+            this.accDurationText.Size = new System.Drawing.Size(106, 22);
             this.accDurationText.TabIndex = 41;
             this.accDurationText.TextChanged += new System.EventHandler(this.accDurationText_Changed);
             this.accDurationText.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.numbercheck);
@@ -563,7 +563,7 @@
             this.accw3.AutoSize = true;
             this.accw3.Location = new System.Drawing.Point(97, 87);
             this.accw3.Name = "accw3";
-            this.accw3.Size = new System.Drawing.Size(14, 13);
+            this.accw3.Size = new System.Drawing.Size(11, 12);
             this.accw3.TabIndex = 40;
             this.accw3.Text = "~";
             // 
@@ -571,7 +571,7 @@
             // 
             this.accHZText.Location = new System.Drawing.Point(114, 83);
             this.accHZText.Name = "accHZText";
-            this.accHZText.Size = new System.Drawing.Size(62, 20);
+            this.accHZText.Size = new System.Drawing.Size(62, 22);
             this.accHZText.TabIndex = 39;
             this.accHZText.TextChanged += new System.EventHandler(this.accXYZText_Changed);
             this.accHZText.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.floatcheck);
@@ -580,7 +580,7 @@
             // 
             this.accLZText.Location = new System.Drawing.Point(32, 83);
             this.accLZText.Name = "accLZText";
-            this.accLZText.Size = new System.Drawing.Size(62, 20);
+            this.accLZText.Size = new System.Drawing.Size(62, 22);
             this.accLZText.TabIndex = 38;
             this.accLZText.TextChanged += new System.EventHandler(this.accXYZText_Changed);
             this.accLZText.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.floatcheck);
@@ -590,7 +590,7 @@
             this.accZLabel.AutoSize = true;
             this.accZLabel.Location = new System.Drawing.Point(14, 87);
             this.accZLabel.Name = "accZLabel";
-            this.accZLabel.Size = new System.Drawing.Size(20, 13);
+            this.accZLabel.Size = new System.Drawing.Size(18, 12);
             this.accZLabel.TabIndex = 37;
             this.accZLabel.Text = "Z: ";
             // 
@@ -599,7 +599,7 @@
             this.accw2.AutoSize = true;
             this.accw2.Location = new System.Drawing.Point(97, 56);
             this.accw2.Name = "accw2";
-            this.accw2.Size = new System.Drawing.Size(14, 13);
+            this.accw2.Size = new System.Drawing.Size(11, 12);
             this.accw2.TabIndex = 36;
             this.accw2.Text = "~";
             // 
@@ -607,7 +607,7 @@
             // 
             this.accHYText.Location = new System.Drawing.Point(114, 53);
             this.accHYText.Name = "accHYText";
-            this.accHYText.Size = new System.Drawing.Size(62, 20);
+            this.accHYText.Size = new System.Drawing.Size(62, 22);
             this.accHYText.TabIndex = 35;
             this.accHYText.TextChanged += new System.EventHandler(this.accXYZText_Changed);
             this.accHYText.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.floatcheck);
@@ -616,7 +616,7 @@
             // 
             this.accLYText.Location = new System.Drawing.Point(32, 53);
             this.accLYText.Name = "accLYText";
-            this.accLYText.Size = new System.Drawing.Size(62, 20);
+            this.accLYText.Size = new System.Drawing.Size(62, 22);
             this.accLYText.TabIndex = 34;
             this.accLYText.TextChanged += new System.EventHandler(this.accXYZText_Changed);
             this.accLYText.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.floatcheck);
@@ -626,7 +626,7 @@
             this.accYLabel.AutoSize = true;
             this.accYLabel.Location = new System.Drawing.Point(14, 56);
             this.accYLabel.Name = "accYLabel";
-            this.accYLabel.Size = new System.Drawing.Size(20, 13);
+            this.accYLabel.Size = new System.Drawing.Size(19, 12);
             this.accYLabel.TabIndex = 33;
             this.accYLabel.Text = "Y: ";
             // 
@@ -635,7 +635,7 @@
             this.accDurationLabel.AutoSize = true;
             this.accDurationLabel.Location = new System.Drawing.Point(14, 115);
             this.accDurationLabel.Name = "accDurationLabel";
-            this.accDurationLabel.Size = new System.Drawing.Size(50, 13);
+            this.accDurationLabel.Size = new System.Drawing.Size(49, 12);
             this.accDurationLabel.TabIndex = 32;
             this.accDurationLabel.Text = "Duration:";
             // 
@@ -644,7 +644,7 @@
             this.accw1.AutoSize = true;
             this.accw1.Location = new System.Drawing.Point(97, 26);
             this.accw1.Name = "accw1";
-            this.accw1.Size = new System.Drawing.Size(14, 13);
+            this.accw1.Size = new System.Drawing.Size(11, 12);
             this.accw1.TabIndex = 29;
             this.accw1.Text = "~";
             // 
@@ -652,7 +652,7 @@
             // 
             this.accHXText.Location = new System.Drawing.Point(114, 23);
             this.accHXText.Name = "accHXText";
-            this.accHXText.Size = new System.Drawing.Size(62, 20);
+            this.accHXText.Size = new System.Drawing.Size(62, 22);
             this.accHXText.TabIndex = 26;
             this.accHXText.TextChanged += new System.EventHandler(this.accXYZText_Changed);
             this.accHXText.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.floatcheck);
@@ -661,7 +661,7 @@
             // 
             this.accLXText.Location = new System.Drawing.Point(32, 23);
             this.accLXText.Name = "accLXText";
-            this.accLXText.Size = new System.Drawing.Size(62, 20);
+            this.accLXText.Size = new System.Drawing.Size(62, 22);
             this.accLXText.TabIndex = 16;
             this.accLXText.TextChanged += new System.EventHandler(this.accXYZText_Changed);
             this.accLXText.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.floatcheck);
@@ -671,7 +671,7 @@
             this.accXLabel.AutoSize = true;
             this.accXLabel.Location = new System.Drawing.Point(14, 26);
             this.accXLabel.Name = "accXLabel";
-            this.accXLabel.Size = new System.Drawing.Size(20, 13);
+            this.accXLabel.Size = new System.Drawing.Size(19, 12);
             this.accXLabel.TabIndex = 15;
             this.accXLabel.Text = "X: ";
             // 
@@ -698,7 +698,7 @@
             "Serial3"});
             this.wifi602PortCombo.Location = new System.Drawing.Point(228, 25);
             this.wifi602PortCombo.Name = "wifi602PortCombo";
-            this.wifi602PortCombo.Size = new System.Drawing.Size(75, 21);
+            this.wifi602PortCombo.Size = new System.Drawing.Size(75, 20);
             this.wifi602PortCombo.TabIndex = 10;
             this.wifi602PortCombo.SelectedIndexChanged += new System.EventHandler(this.wifi602PortCombo_SelectedIndexChanged);
             // 
@@ -707,7 +707,7 @@
             this.wifi602PortLabel.AutoSize = true;
             this.wifi602PortLabel.Location = new System.Drawing.Point(165, 28);
             this.wifi602PortLabel.Name = "wifi602PortLabel";
-            this.wifi602PortLabel.Size = new System.Drawing.Size(57, 13);
+            this.wifi602PortLabel.Size = new System.Drawing.Size(53, 12);
             this.wifi602PortLabel.TabIndex = 11;
             this.wifi602PortLabel.Text = "Used Port:";
             // 
@@ -716,7 +716,7 @@
             this.wifi602KeyLabel.AutoSize = true;
             this.wifi602KeyLabel.Location = new System.Drawing.Point(13, 28);
             this.wifi602KeyLabel.Name = "wifi602KeyLabel";
-            this.wifi602KeyLabel.Size = new System.Drawing.Size(28, 13);
+            this.wifi602KeyLabel.Size = new System.Drawing.Size(27, 12);
             this.wifi602KeyLabel.TabIndex = 1;
             this.wifi602KeyLabel.Text = "Key:";
             // 
@@ -733,7 +733,7 @@
             "B"});
             this.wifi602KeyCombo.Location = new System.Drawing.Point(48, 25);
             this.wifi602KeyCombo.Name = "wifi602KeyCombo";
-            this.wifi602KeyCombo.Size = new System.Drawing.Size(112, 21);
+            this.wifi602KeyCombo.Size = new System.Drawing.Size(112, 20);
             this.wifi602KeyCombo.TabIndex = 0;
             this.wifi602KeyCombo.SelectedIndexChanged += new System.EventHandler(this.wifi602KeyCombo_SelectedIndexChanged);
             // 
@@ -775,7 +775,7 @@
             this.ps2CLKCombo.FormattingEnabled = true;
             this.ps2CLKCombo.Location = new System.Drawing.Point(267, 60);
             this.ps2CLKCombo.Name = "ps2CLKCombo";
-            this.ps2CLKCombo.Size = new System.Drawing.Size(36, 21);
+            this.ps2CLKCombo.Size = new System.Drawing.Size(36, 20);
             this.ps2CLKCombo.TabIndex = 13;
             this.ps2CLKCombo.SelectedIndexChanged += new System.EventHandler(this.ps2CLKCombo_SelectedIndexChanged);
             // 
@@ -785,7 +785,7 @@
             this.ps2ATTCombo.FormattingEnabled = true;
             this.ps2ATTCombo.Location = new System.Drawing.Point(196, 60);
             this.ps2ATTCombo.Name = "ps2ATTCombo";
-            this.ps2ATTCombo.Size = new System.Drawing.Size(36, 21);
+            this.ps2ATTCombo.Size = new System.Drawing.Size(36, 20);
             this.ps2ATTCombo.TabIndex = 12;
             this.ps2ATTCombo.SelectedIndexChanged += new System.EventHandler(this.ps2ATTCombo_SelectedIndexChanged);
             // 
@@ -795,7 +795,7 @@
             this.ps2CMDCombo.FormattingEnabled = true;
             this.ps2CMDCombo.Location = new System.Drawing.Point(124, 60);
             this.ps2CMDCombo.Name = "ps2CMDCombo";
-            this.ps2CMDCombo.Size = new System.Drawing.Size(36, 21);
+            this.ps2CMDCombo.Size = new System.Drawing.Size(36, 20);
             this.ps2CMDCombo.TabIndex = 11;
             this.ps2CMDCombo.SelectedIndexChanged += new System.EventHandler(this.ps2CMDCombo_SelectedIndexChanged);
             // 
@@ -805,7 +805,7 @@
             this.ps2DATCombo.FormattingEnabled = true;
             this.ps2DATCombo.Location = new System.Drawing.Point(48, 60);
             this.ps2DATCombo.Name = "ps2DATCombo";
-            this.ps2DATCombo.Size = new System.Drawing.Size(36, 21);
+            this.ps2DATCombo.Size = new System.Drawing.Size(36, 20);
             this.ps2DATCombo.TabIndex = 6;
             this.ps2DATCombo.SelectedIndexChanged += new System.EventHandler(this.ps2DATCombo_SelectedIndexChanged);
             // 
@@ -814,7 +814,7 @@
             this.ps2CLKLabel.AutoSize = true;
             this.ps2CLKLabel.Location = new System.Drawing.Point(238, 63);
             this.ps2CLKLabel.Name = "ps2CLKLabel";
-            this.ps2CLKLabel.Size = new System.Drawing.Size(33, 13);
+            this.ps2CLKLabel.Size = new System.Drawing.Size(34, 12);
             this.ps2CLKLabel.TabIndex = 10;
             this.ps2CLKLabel.Text = "CLK: ";
             // 
@@ -823,7 +823,7 @@
             this.ps2ATTLabel.AutoSize = true;
             this.ps2ATTLabel.Location = new System.Drawing.Point(166, 63);
             this.ps2ATTLabel.Name = "ps2ATTLabel";
-            this.ps2ATTLabel.Size = new System.Drawing.Size(34, 13);
+            this.ps2ATTLabel.Size = new System.Drawing.Size(33, 12);
             this.ps2ATTLabel.TabIndex = 9;
             this.ps2ATTLabel.Text = "ATT: ";
             // 
@@ -832,7 +832,7 @@
             this.ps2CMDLabel.AutoSize = true;
             this.ps2CMDLabel.Location = new System.Drawing.Point(90, 63);
             this.ps2CMDLabel.Name = "ps2CMDLabel";
-            this.ps2CMDLabel.Size = new System.Drawing.Size(37, 13);
+            this.ps2CMDLabel.Size = new System.Drawing.Size(37, 12);
             this.ps2CMDLabel.TabIndex = 8;
             this.ps2CMDLabel.Text = "CMD: ";
             // 
@@ -841,7 +841,7 @@
             this.ps2DATLabel.AutoSize = true;
             this.ps2DATLabel.Location = new System.Drawing.Point(14, 63);
             this.ps2DATLabel.Name = "ps2DATLabel";
-            this.ps2DATLabel.Size = new System.Drawing.Size(32, 13);
+            this.ps2DATLabel.Size = new System.Drawing.Size(31, 12);
             this.ps2DATLabel.TabIndex = 7;
             this.ps2DATLabel.Text = "DAT:";
             // 
@@ -855,7 +855,7 @@
             "Release"});
             this.ps2TypeCombo.Location = new System.Drawing.Point(205, 22);
             this.ps2TypeCombo.Name = "ps2TypeCombo";
-            this.ps2TypeCombo.Size = new System.Drawing.Size(98, 21);
+            this.ps2TypeCombo.Size = new System.Drawing.Size(98, 20);
             this.ps2TypeCombo.TabIndex = 6;
             this.ps2TypeCombo.SelectedIndexChanged += new System.EventHandler(this.ps2TypeCombo_SelectedIndexChanged);
             // 
@@ -864,7 +864,7 @@
             this.ps2KeyLabel.AutoSize = true;
             this.ps2KeyLabel.Location = new System.Drawing.Point(13, 25);
             this.ps2KeyLabel.Name = "ps2KeyLabel";
-            this.ps2KeyLabel.Size = new System.Drawing.Size(31, 13);
+            this.ps2KeyLabel.Size = new System.Drawing.Size(30, 12);
             this.ps2KeyLabel.TabIndex = 4;
             this.ps2KeyLabel.Text = "Key: ";
             // 
@@ -873,7 +873,7 @@
             this.ps2TypeLabel.AutoSize = true;
             this.ps2TypeLabel.Location = new System.Drawing.Point(165, 25);
             this.ps2TypeLabel.Name = "ps2TypeLabel";
-            this.ps2TypeLabel.Size = new System.Drawing.Size(34, 13);
+            this.ps2TypeLabel.Size = new System.Drawing.Size(32, 12);
             this.ps2TypeLabel.TabIndex = 5;
             this.ps2TypeLabel.Text = "Type:";
             // 
@@ -904,7 +904,7 @@
             "PSB_SQUARE"});
             this.ps2KeyCombo.Location = new System.Drawing.Point(48, 22);
             this.ps2KeyCombo.Name = "ps2KeyCombo";
-            this.ps2KeyCombo.Size = new System.Drawing.Size(111, 21);
+            this.ps2KeyCombo.Size = new System.Drawing.Size(111, 20);
             this.ps2KeyCombo.TabIndex = 4;
             this.ps2KeyCombo.SelectedIndexChanged += new System.EventHandler(this.ps2KeyCombo_SelectedIndexChanged);
             // 
@@ -945,7 +945,7 @@
             "Continuous"});
             this.btModeCombo.Location = new System.Drawing.Point(208, 19);
             this.btModeCombo.Name = "btModeCombo";
-            this.btModeCombo.Size = new System.Drawing.Size(95, 21);
+            this.btModeCombo.Size = new System.Drawing.Size(95, 20);
             this.btModeCombo.TabIndex = 9;
             this.btModeCombo.SelectedIndexChanged += new System.EventHandler(this.btTypeCombo_SelectedIndexChanged);
             // 
@@ -954,7 +954,7 @@
             this.btModeLabel.AutoSize = true;
             this.btModeLabel.Location = new System.Drawing.Point(165, 22);
             this.btModeLabel.Name = "btModeLabel";
-            this.btModeLabel.Size = new System.Drawing.Size(37, 13);
+            this.btModeLabel.Size = new System.Drawing.Size(35, 12);
             this.btModeLabel.TabIndex = 8;
             this.btModeLabel.Text = "Mode:";
             // 
@@ -970,7 +970,7 @@
             "115200"});
             this.btBaudCombo.Location = new System.Drawing.Point(81, 54);
             this.btBaudCombo.Name = "btBaudCombo";
-            this.btBaudCombo.Size = new System.Drawing.Size(78, 21);
+            this.btBaudCombo.Size = new System.Drawing.Size(78, 20);
             this.btBaudCombo.TabIndex = 7;
             this.btBaudCombo.SelectedIndexChanged += new System.EventHandler(this.btBaudCombo_SelectedIndexChanged);
             // 
@@ -979,7 +979,7 @@
             this.btBaudLabel.AutoSize = true;
             this.btBaudLabel.Location = new System.Drawing.Point(14, 57);
             this.btBaudLabel.Name = "btBaudLabel";
-            this.btBaudLabel.Size = new System.Drawing.Size(61, 13);
+            this.btBaudLabel.Size = new System.Drawing.Size(57, 12);
             this.btBaudLabel.TabIndex = 6;
             this.btBaudLabel.Text = "Baud Rate:";
             // 
@@ -993,7 +993,7 @@
             "Serial3"});
             this.btPortCombo.Location = new System.Drawing.Point(228, 54);
             this.btPortCombo.Name = "btPortCombo";
-            this.btPortCombo.Size = new System.Drawing.Size(75, 21);
+            this.btPortCombo.Size = new System.Drawing.Size(75, 20);
             this.btPortCombo.TabIndex = 4;
             this.btPortCombo.SelectedIndexChanged += new System.EventHandler(this.btPortCombo_SelectedIndexChanged);
             // 
@@ -1002,7 +1002,7 @@
             this.btPortLabel.AutoSize = true;
             this.btPortLabel.Location = new System.Drawing.Point(165, 57);
             this.btPortLabel.Name = "btPortLabel";
-            this.btPortLabel.Size = new System.Drawing.Size(57, 13);
+            this.btPortLabel.Size = new System.Drawing.Size(53, 12);
             this.btPortLabel.TabIndex = 5;
             this.btPortLabel.Text = "Used Port:";
             // 
@@ -1011,16 +1011,17 @@
             this.btKeyLabel.AutoSize = true;
             this.btKeyLabel.Location = new System.Drawing.Point(13, 22);
             this.btKeyLabel.Name = "btKeyLabel";
-            this.btKeyLabel.Size = new System.Drawing.Size(31, 13);
+            this.btKeyLabel.Size = new System.Drawing.Size(30, 12);
             this.btKeyLabel.TabIndex = 4;
             this.btKeyLabel.Text = "Key: ";
             // 
             // btKeyText
             // 
+            this.btKeyText.CausesValidation = false;
             this.btKeyText.Location = new System.Drawing.Point(48, 19);
             this.btKeyText.MaxLength = 1;
             this.btKeyText.Name = "btKeyText";
-            this.btKeyText.Size = new System.Drawing.Size(111, 20);
+            this.btKeyText.Size = new System.Drawing.Size(111, 22);
             this.btKeyText.TabIndex = 0;
             this.btKeyText.TextChanged += new System.EventHandler(this.btKeyText_TextChanged);
             // 
@@ -1081,7 +1082,7 @@
             "Release"});
             this.KeyboardTypeCombo.Location = new System.Drawing.Point(205, 19);
             this.KeyboardTypeCombo.Name = "KeyboardTypeCombo";
-            this.KeyboardTypeCombo.Size = new System.Drawing.Size(98, 21);
+            this.KeyboardTypeCombo.Size = new System.Drawing.Size(98, 20);
             this.KeyboardTypeCombo.TabIndex = 3;
             this.KeyboardTypeCombo.SelectedIndexChanged += new System.EventHandler(this.KeyboardTypeCombo_SelectedIndexChanged);
             // 
@@ -1090,7 +1091,7 @@
             this.keyboardTypeLabel.AutoSize = true;
             this.keyboardTypeLabel.Location = new System.Drawing.Point(165, 23);
             this.keyboardTypeLabel.Name = "keyboardTypeLabel";
-            this.keyboardTypeLabel.Size = new System.Drawing.Size(34, 13);
+            this.keyboardTypeLabel.Size = new System.Drawing.Size(32, 12);
             this.keyboardTypeLabel.TabIndex = 2;
             this.keyboardTypeLabel.Text = "Type:";
             // 
@@ -1099,7 +1100,7 @@
             this.KeyboardKeyLabel.AutoSize = true;
             this.KeyboardKeyLabel.Location = new System.Drawing.Point(13, 23);
             this.KeyboardKeyLabel.Name = "KeyboardKeyLabel";
-            this.KeyboardKeyLabel.Size = new System.Drawing.Size(28, 13);
+            this.KeyboardKeyLabel.Size = new System.Drawing.Size(27, 12);
             this.KeyboardKeyLabel.TabIndex = 1;
             this.KeyboardKeyLabel.Text = "Key:";
             // 
@@ -1142,7 +1143,7 @@
             "KEY_ESC"});
             this.KeyboardCombo.Location = new System.Drawing.Point(48, 19);
             this.KeyboardCombo.Name = "KeyboardCombo";
-            this.KeyboardCombo.Size = new System.Drawing.Size(111, 21);
+            this.KeyboardCombo.Size = new System.Drawing.Size(111, 20);
             this.KeyboardCombo.TabIndex = 0;
             this.KeyboardCombo.SelectedIndexChanged += new System.EventHandler(this.KeyboardCombo_SelectedIndexChanged);
             // 
@@ -1163,7 +1164,7 @@
             this.TitleMotion.AutoSize = true;
             this.TitleMotion.Location = new System.Drawing.Point(239, 15);
             this.TitleMotion.Name = "TitleMotion";
-            this.TitleMotion.Size = new System.Drawing.Size(64, 17);
+            this.TitleMotion.Size = new System.Drawing.Size(61, 16);
             this.TitleMotion.TabIndex = 2;
             this.TitleMotion.TabStop = true;
             this.TitleMotion.Text = "Start Up";
@@ -1175,7 +1176,7 @@
             this.AlwaysOff.AutoSize = true;
             this.AlwaysOff.Location = new System.Drawing.Point(124, 15);
             this.AlwaysOff.Name = "AlwaysOff";
-            this.AlwaysOff.Size = new System.Drawing.Size(75, 17);
+            this.AlwaysOff.Size = new System.Drawing.Size(76, 16);
             this.AlwaysOff.TabIndex = 1;
             this.AlwaysOff.Text = "Always Off";
             this.AlwaysOff.UseVisualStyleBackColor = true;
@@ -1187,7 +1188,7 @@
             this.AlwaysOn.Checked = true;
             this.AlwaysOn.Location = new System.Drawing.Point(16, 15);
             this.AlwaysOn.Name = "AlwaysOn";
-            this.AlwaysOn.Size = new System.Drawing.Size(75, 17);
+            this.AlwaysOn.Size = new System.Drawing.Size(74, 16);
             this.AlwaysOn.TabIndex = 0;
             this.AlwaysOn.TabStop = true;
             this.AlwaysOn.Text = "Always On";
@@ -1200,13 +1201,14 @@
             this.warningLabel.ForeColor = System.Drawing.Color.Red;
             this.warningLabel.Location = new System.Drawing.Point(12, 48);
             this.warningLabel.Name = "warningLabel";
-            this.warningLabel.Size = new System.Drawing.Size(0, 13);
+            this.warningLabel.Size = new System.Drawing.Size(0, 12);
             this.warningLabel.TabIndex = 19;
             // 
             // SetCommand
             // 
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(744, 666);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.ClientSize = new System.Drawing.Size(744, 674);
             this.Controls.Add(this.warningLabel);
             this.Controls.Add(this.MotionConfig);
             this.Controls.Add(this.removeButton);
@@ -1218,13 +1220,13 @@
             this.Controls.Add(this.nameMaskedTextBox);
             this.Controls.Add(this.CmdListView);
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(760, 705);
-            this.MinimumSize = new System.Drawing.Size(760, 705);
+            this.MaximumSize = new System.Drawing.Size(760, 712);
+            this.MinimumSize = new System.Drawing.Size(760, 712);
             this.Name = "SetCommand";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Trigger Commands";
+            this.Text = "Motion Trigger Commands";
             this.MotionConfig.ResumeLayout(false);
             this.MotionTrigger.ResumeLayout(false);
             this.MotionTrigger.PerformLayout();

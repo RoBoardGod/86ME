@@ -1,4 +1,38 @@
-﻿using System.Collections.Generic;
+﻿/*================================================================//
+//     __      ____   ____                                        //
+//   /'_ `\   /'___\ /\  _`\             __                       //
+//  /\ \L\ \ /\ \__/ \ \ \/\ \   __  __ /\_\     ___      ___     //
+//  \/_> _ <_\ \  _``\\ \ \ \ \ /\ \/\ \\/\ \  /' _ `\   / __`\   //
+//    /\ \L\ \\ \ \L\ \\ \ \_\ \\ \ \_\ \\ \ \ /\ \/\ \ /\ \L\ \  //
+//    \ \____/ \ \____/ \ \____/ \ \____/ \ \_\\ \_\ \_\\ \____/  //
+//     \/___/   \/___/   \/___/   \/___/   \/_/ \/_/\/_/ \/___/   //
+//                                                                //
+//                                       http://www.86duino.com   //
+//================================================================//
+ MotionElement.cs - DM&P 86ME
+ Copyright (c) 2017 Sayter <sayter@dmp.com.tw>. All right reserved.
+ Copyright (c) 2018 RoBoardGod <roboardgod@dmp.com.tw>. All right reserved.
+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License as
+ published by the Free Software Foundation; either version 2 of
+ the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+ MA  02110-1301  USA
+
+ (If you need a commercial license, please contact soc@dmp.com.tw
+  to get more information.)
+*/
+
+using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
 
@@ -65,6 +99,14 @@ namespace _86ME_ver2
             ret.states = this.states.ToList();
             ret.used_servos = this.used_servos.ToList();
             return ret;
+        }
+        public void swap(int source, int target)
+        {
+            for (int i = 0; i < this.Events.Count; i++)
+            {
+                if (this.Events[i] is ME_Frame)
+                    ((ME_Frame)this.Events[i]).swap(source, target);
+            }
         }
     }
 
@@ -195,6 +237,12 @@ namespace _86ME_ver2
             ret.type = this.type;
             return ret;
         }
+        public void swap(int source, int target)
+        {
+            int s = frame[source];
+            frame[source] = frame[target];
+            frame[target] = s;
+        }
     }
 
     public class ME_Delay 
@@ -223,7 +271,7 @@ namespace _86ME_ver2
         public ME_Goto()
         {
             this.name = null;
-            this.is_goto = false;
+            this.is_goto = true;
             this.loops = "0";
             this.current_loop = 0;
             this.infinite = false;
@@ -353,6 +401,8 @@ namespace _86ME_ver2
         public uint[] home;
         public uint[] range;
         public string[] picture;
+        public byte[] graph;
+        public byte[] watermark;
         public string mirror;
         public int sync;
         public string[] imu;
@@ -366,7 +416,7 @@ namespace _86ME_ver2
         public ME_RBM()
         {
             this.version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            this.board = "86Duino_One";
+            this.board = "86Duino One";
             this.servos = new string[45];
             this.offsets = new int[45];
             this.home = new uint[45];

@@ -25,6 +25,11 @@ from BaseHTTPServer import BaseHTTPRequestHandler
 from BaseHTTPServer import HTTPServer
 from string import split
 import time
+import thread
+
+server = None
+scratch_connected_time = 0
+waiting_for_first_scratch_poll = True
 
 class GetHandler(BaseHTTPRequestHandler):
     """
@@ -34,18 +39,12 @@ class GetHandler(BaseHTTPRequestHandler):
     HTTP GET requests are accepted and the appropriate command handler is
     called to process the command.
     """
-
+    
     firmata = None
-
-    # tcp server port - must match that in the .s2e descriptor file
-    port = 50209
-
+    
     # instance handle for the scratch command handler
     scratch_command_handler = None
-
-    #indicator so that we can tell user Scratch is ready to go
-    waiting_for_first_scratch_poll = True
-
+    
     # this is a 'classmethod' because we need to set data before starting
     # the HTTP server.
     #noinspection PyMethodParameters
@@ -72,17 +71,27 @@ class GetHandler(BaseHTTPRequestHandler):
         to send policy information to keep Flash happy on Scratch.
         (This may change when Scratch is converted to HTML 5
         """
+        
+        global scratch_connected_time
+        global waiting_for_first_scratch_poll
+        
         # print self.path
         # print time.time()
         # skip over the / in the command
         cmd = self.path[1:]
+        self.firmata.set_data_status(len(cmd), 0, 0, 0)
+        scratch_connected_time = time.time()
+        waiting_for_first_scratch_poll = False
+        
         # create a list containing the command and all of its parameters
         cmd_list = split(cmd, '/')
 
         # get the command handler method for the command and call the handler
         # cmd_list[0] contains the command. look up the command method
-
-        s = self.command_handler.do_command(cmd_list)
+        try:
+            s = self.command_handler.do_command(cmd_list)
+        except SystemExit:
+            return
 
         # if pin was not enabled for reporter block, a "NoneType" can be returned by the command_handler
         if (s is None) or (len(s) == 0):
@@ -113,24 +122,63 @@ class GetHandler(BaseHTTPRequestHandler):
             http_response += str(response + crlf)
         # send it out the door to Scratch
         self.wfile.write(http_response)
+        self.firmata.set_data_status(0, 0, 0, len(http_response))
 
+def updateTime(firmata):
+    
+    global scratch_connected_time
+    global waiting_for_first_scratch_poll
+    
+    unstable_linking = 0
+    
+    while True:
+        if waiting_for_first_scratch_poll == False:
+            if scratch_connected_time != 0:
+                scratch_connected_time = 0
+                scratch_connected_starttime = time.time()
+                firmata.set_s2a_fm_status(10)
+                if unstable_linking == 1:
+                    unstable_linking = 0
+                    firmata.set_error_no(100)
+                    firmata.send_error_message()
+            else:
+                if time.time() - scratch_connected_starttime > 1:
+                    unstable_linking = 1
+                    firmata.set_s2a_fm_status(9)
+                    firmata.set_error_no(6)
+                    firmata.send_error_message()
+                    scratch_connected_starttime = time.time()
+
+def close_server():
+    
+    global server
+    
+    if server != None:    
+        def kill_me_please(s):
+            s.shutdown()
+        thread.start_new_thread(kill_me_please, (server,))
+    return
 
 def start_server(firmata, command_handler):
     """
        This function populates class variables with essential data and
        instantiates the HTTP Server
     """
-
+    
+    global server
+    
     GetHandler.set_items(firmata, command_handler)
     try:
         server = HTTPServer(('localhost', 50209), GetHandler)
         print 'Starting HTTP Server!'
         print 'Use <Ctrl-C> to exit the extension\n'
         print 'Please start Scratch or Snap!'
+        thread.start_new_thread(updateTime, (firmata,))
     except Exception:
         logging.debug('Exception in scratch_http_server.py: HTTP Socket may already be in use - restart Scratch')
         print 'HTTP Socket may already be in use - restart Scratch'
         raise
+    
     try:
         #start the server
         server.serve_forever()

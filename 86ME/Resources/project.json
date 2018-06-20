@@ -2,19 +2,19 @@
 	"objName": "Stage",
 	"sounds": [{
 			"soundName": "pop",
-			"soundID": 1,
+			"soundID": 0,
 			"md5": "83a9787d4cb6f3b7632b4ddfebf74367.wav",
 			"sampleCount": 258,
 			"rate": 11025,
 			"format": ""
 		}],
 	"costumes": [{
-			"costumeName": "backdrop1",
+			"costumeName": "86scratch_background",
 			"baseLayerID": 3,
-			"baseLayerMD5": "739b5e2a2435f6e1ec2993791b423146.png",
-			"bitmapResolution": 1,
-			"rotationCenterX": 240,
-			"rotationCenterY": 180
+			"baseLayerMD5": "a8311e13b06e88aeb30d9bca77968fd5.png",
+			"bitmapResolution": 2,
+			"rotationCenterX": 480,
+			"rotationCenterY": 360
 		}],
 	"currentCostumeIndex": 0,
 	"penLayerMD5": "5c81a336fab8be57adc039a8a2b33ca9.png",
@@ -22,34 +22,56 @@
 	"tempoBPM": 60,
 	"videoAlpha": 0.5,
 	"children": [{
-			"objName": "Sprite1",
+			"objName": "86Gin",
 			"sounds": [{
-					"soundName": "meow",
+					"soundName": "pop",
 					"soundID": 0,
-					"md5": "83c36d806dc92327b9e7049a565c6bff.wav",
-					"sampleCount": 18688,
-					"rate": 22050,
+					"md5": "83a9787d4cb6f3b7632b4ddfebf74367.wav",
+					"sampleCount": 258,
+					"rate": 11025,
 					"format": ""
 				}],
 			"costumes": [{
-					"costumeName": "costume1",
+					"costumeName": "86Gin",
 					"baseLayerID": 1,
-					"baseLayerMD5": "09dc888b0b7df19f70d81588ae73420e.svg",
-					"bitmapResolution": 1,
-					"rotationCenterX": 47,
-					"rotationCenterY": 55
-				},
-				{
-					"costumeName": "costume2",
-					"baseLayerID": 2,
-					"baseLayerMD5": "3696356a03a8d938318876a593572843.svg",
-					"bitmapResolution": 1,
-					"rotationCenterX": 47,
-					"rotationCenterY": 55
+					"baseLayerMD5": "9450bce15ed2b31d368b52fb66046a4a.png",
+					"bitmapResolution": 2,
+					"rotationCenterX": 92,
+					"rotationCenterY": 170
 				}],
 			"currentCostumeIndex": 0,
-			"scratchX": 0,
-			"scratchY": 0,
+			"scratchX": 150,
+			"scratchY": -100,
+			"scale": 1,
+			"direction": 90,
+			"rotationStyle": "normal",
+			"isDraggable": false,
+			"indexInLibrary": 2,
+			"visible": true,
+			"spriteInfo": {
+			}
+		},
+		{
+			"objName": "86Scratch",
+			"sounds": [{
+					"soundName": "pop",
+					"soundID": 0,
+					"md5": "83a9787d4cb6f3b7632b4ddfebf74367.wav",
+					"sampleCount": 258,
+					"rate": 11025,
+					"format": ""
+				}],
+			"costumes": [{
+					"costumeName": "86Scratch",
+					"baseLayerID": 2,
+					"baseLayerMD5": "aac244b72ab24578e72e17c18fcce86c.png",
+					"bitmapResolution": 2,
+					"rotationCenterX": 164,
+					"rotationCenterY": 172
+				}],
+			"currentCostumeIndex": 0,
+			"scratchX": -131,
+			"scratchY": -90,
 			"scale": 1,
 			"direction": 90,
 			"rotationStyle": "normal",
@@ -74,7 +96,7 @@
           [ "", "DigitalWrite: Set Pin %m.digital_pins to %m.high_low", "digital_write", "PIN", 0 ],
           [ "r", "Read Digital Pin %m.digital_pins", "digital_read", "PIN" ],
           // separate
-          [ "r", "Read Analog Pin (A) %n", "analog_read", "PIN" ]// insert blocks
+          [ "r", "Read Analog Pin (A) %n", "analog_read", "PIN" ] // insert blocks
         ],
         "menus": {
           "high_low": [ "0", "1" ],
@@ -89,6 +111,9 @@
     ],
     "videoOn": false,
     "scriptCount": 0,
-    "spriteCount": 1
+    "spriteCount": 2,
+    "userAgent": "Scratch 2.0 Offline Editor",
+    "flashVersion": "WIN 27,0,0,129",
+    "swfVersion": "v456.0.4"
   }
 }

@@ -1,0 +1,65 @@
+#### CHANGELOG ####
+
+_VERSION_: v2.1
+
+* UI Interface：
+    * Add a new icon for 86ME program.
+    * Add a new background picture in 86ME main window.
+    * Add a new picture about the list of all authors.
+    * Complete the four langurage descriptive files。
+    * Automatically changing the link of official website depending the choosed languarge.
+    * If modify the "text and other icon size" on your PC, now 86ME can resize the UI interface by itself.
+* Linking for 86Duino：
+    * When detecting 86Duino board, will select the 86Duino COM port in list automatically。
+    * Fix the bug about choosing the incorrect com port (that is not 86Duino COM port).
+    * Fix the bug when we select a preempted COM port.
+    * Fix the bug when plug-out linked line.
+* Main Window：
+    * Allow taht the motion name is named a string including number (0~9) for haed.
+    * "Disable Frame Edit Settings" when no linking between 86Duino and 86ME.
+    * When "Load Frame File", writting the attachID as comment in frame file。
+    * Add the "Insert" and "Delete" option in "Instruction List".
+    * Fix a bug for tip frame.
+    * Fix a bug for writting a invalid value in input field.
+    * Fix the displaying error about "Play,Pause,Stop" words.
+    * Fix the error for the dragging coordinate of mouse.
+    * Modify the sequence of "Goto,Flag,If,Compute,GotoMotion" and add the watermark.
+* Code Generation：
+    * Fix a bug for motion layer.
+    * Detect the conflict for choosed Pins and COM port automatically.
+    * Add the attachID comment in frame file when generating "Frame File".
+* Code Generation for 86Scratch Project：
+    * Update the composition and interface.
+    * The all setting on "86scratch project setting" page will be saved in .rbm file.
+    * "Connection Setting" is modified to be zooming menu.
+    * When exporting the 86Scratch project, will include the background picture, and it is as project icon.
+    * Add the Ethernet/ESP8266/ESP8266 3 linking methods.
+    * Add the "Porject Description" field.
+    * Fix the bug for 86Duino firmware and python helper.
+* Robot Configuration Page：
+    * Disable 86Duino AI option.
+    * The IMU list only show the corrrect On-Board IMU depending on choosed 86Duino board.
+    * Modify the "Mirror File" option to be two-stage button (Set/Remove).
+    * "Robot Picture" and "Mirror File" now are saved in same .rbm file.
+    * Fix a bug for input the invalid value to input filed.
+    * Fix the behavior when Min is larger than Max.
+* Trigger Commands Page：
+    * Modify the "Add/Rename button" as pop-up window.
+    * Add the "Comments" field.
+    * "Trigger Setting" is modified to be zooming menu.
+    * Disable the "LEADIY-WiFi Camera" option。
+    * Detect the conflict for choosed Pins and COM port automatically.
+* User Variables Page：
+    * Modify the "Add/Rename button" as pop-up window.
+    * Add the "Comments" field.
+
+_VERSION_: v2.0
+
+* Add a new form for editing variables in "Option->Edit Variables"
+* Change the project format to JSON.
+* Code Generation
+    * add a new button for generating robot motion library.
+    * add a new button for generating Scratch 2.0 project.
+    * replace the button "Generate 86Duino Sketch (with Frame Files)" to "Frame Files" in advance part
+* Move "Trigger" to "Options->Edit Trigger Commands".
+* Upgrade .NET Framework from 4.0 to 4.5.

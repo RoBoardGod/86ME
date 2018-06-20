@@ -83,6 +83,36 @@ namespace _86ME_ver2.Properties {
         /// <summary>
         ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
         /// </summary>
+        internal static System.Drawing.Bitmap addmotion {
+            get {
+                object obj = ResourceManager.GetObject("addmotion", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
+        internal static System.Drawing.Bitmap default_BG {
+            get {
+                object obj = ResourceManager.GetObject("default_BG", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
+        internal static System.Drawing.Bitmap delmotion {
+            get {
+                object obj = ResourceManager.GetObject("delmotion", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
         internal static System.Drawing.Bitmap down_arrow {
             get {
                 object obj = ResourceManager.GetObject("down_arrow", resourceCulture);
@@ -91,48 +121,33 @@ namespace _86ME_ver2.Properties {
         }
         
         /// <summary>
-        ///   查詢類似 /*
-        /// * Firmata is a generic protocol for communicating with microcontrollers
-        /// * from software on a host computer. It is intended to work with
-        /// * any host computer software package.
-        /// *
-        /// * To download a host software package, please clink on the following link
-        /// * to open the download page in your default browser.ser
-        /// *
-        /// * http://firmata.org/wiki/Download
-        /// */
-        ///
-        ////*
-        /// Copyright (C) 2006-2008 Hans-Christoph Steiner.  All rights reserved.
-        /// Copyright (C) 2010-2011 Paul Stoffregen.  All rights reserved.
-        /// Copyright (C)  [字串的其餘部分已遭截斷]&quot;; 的當地語系化字串。
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
         /// </summary>
-        internal static string FirmataPlus {
+        internal static System.Drawing.Bitmap downmotion {
             get {
-                return ResourceManager.GetString("FirmataPlus", resourceCulture);
+                object obj = ResourceManager.GetObject("downmotion", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   查詢類似 /*
-        ///* Firmata is a generic protocol for communicating with microcontrollers
-        ///* from software on a host computer. It is intended to work with
-        ///* any host computer software package.
-        ///*
-        ///* To download a host software package, please clink on the following link
-        ///* to open the download page in your default browser.ser
-        ///*
-        ///* http://firmata.org/wiki/Download
-        ///*/
+        ///   查詢類似 #include &lt;FirmataPlus86.h&gt;
         ///
-        ////*
-        ///Copyright (C) 2006-2008 Hans-Christoph Steiner.  All rights reserved.
-        ///Copyright (C) 2010-2011 Paul Stoffregen.  All rights reserved.
-        ///Copyright (C) 2009 Shigeru [字串的其餘部分已遭截斷]&quot;; 的當地語系化字串。
+        ///#define CONNECT_86DUINO_METHOD 0 // 0: USB Serial 1: BlueTooth 2: Arduino WiFi Shield 3: Ethernet 4: ESP8266 WiFi 5: ESP8266 AP
+        ///
+        ///char* projectName = &quot;Hello, 86Duino&quot;;
+        ///char* _ssid = &quot;your SSID&quot;;
+        ///char* _password = &quot;your password&quot;; // If it is ESP8266 AP mode, the password can not be shorter that 8 chars.
+        ///#define BT_ESP8266_Serial         Serial1
+        ///#define BT_ESP8266_Serial_Baud    9600
+        ///
+        ///#if CONNECT_86DUINO_METHOD == 2 // Arduino WiFi Shield
+        ///    bool _wep = false;
+        ///    IPAddress _ip(0, [字串的其餘部分已遭截斷]&quot;; 的當地語系化字串。
         /// </summary>
-        internal static string FirmataPlusBluetooth86 {
+        internal static string FirmataPlusAll {
             get {
-                return ResourceManager.GetString("FirmataPlusBluetooth86", resourceCulture);
+                return ResourceManager.GetString("FirmataPlusAll", resourceCulture);
             }
         }
         
@@ -257,6 +272,31 @@ namespace _86ME_ver2.Properties {
         }
         
         /// <summary>
+        ///   查詢類似 #!/usr/bin/env python
+        ///
+        ///# -*- coding: utf-8 -*-
+        ///
+        ///&quot;&quot;&quot;
+        ///Created on Wed Nov  25 13:17:15 2013
+        ///
+        ///@author: Alan Yorinks
+        ///Copyright (c) 2013-14 Alan Yorinks All right reserved.
+        ///
+        ///This program is free software; you can redistribute it and/or
+        ///modify it under the terms of the GNU Lesser General Public
+        ///License as published by the Free Software Foundation; either
+        ///version 2.1 of the License, or (at your option) any later version.
+        ///
+        ///This library is distributed in the hope that it will be useful,
+        ///but WITHOUT ANY WARRANTY; with [字串的其餘部分已遭截斷]&quot;; 的當地語系化字串。
+        /// </summary>
+        internal static string s2a_fm {
+            get {
+                return ResourceManager.GetString("s2a_fm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
         /// </summary>
         internal static System.Drawing.Bitmap save_frame {
@@ -281,24 +321,23 @@ namespace _86ME_ver2.Properties {
         ///	&quot;objName&quot;: &quot;Stage&quot;,
         ///	&quot;sounds&quot;: [{
         ///			&quot;soundName&quot;: &quot;pop&quot;,
-        ///			&quot;soundID&quot;: 1,
+        ///			&quot;soundID&quot;: 0,
         ///			&quot;md5&quot;: &quot;83a9787d4cb6f3b7632b4ddfebf74367.wav&quot;,
         ///			&quot;sampleCount&quot;: 258,
         ///			&quot;rate&quot;: 11025,
         ///			&quot;format&quot;: &quot;&quot;
         ///		}],
         ///	&quot;costumes&quot;: [{
-        ///			&quot;costumeName&quot;: &quot;backdrop1&quot;,
+        ///			&quot;costumeName&quot;: &quot;86scratch_background&quot;,
         ///			&quot;baseLayerID&quot;: 3,
-        ///			&quot;baseLayerMD5&quot;: &quot;739b5e2a2435f6e1ec2993791b423146.png&quot;,
-        ///			&quot;bitmapResolution&quot;: 1,
-        ///			&quot;rotationCenterX&quot;: 240,
-        ///			&quot;rotationCenterY&quot;: 180
+        ///			&quot;baseLayerMD5&quot;: &quot;a8311e13b06e88aeb30d9bca77968fd5.png&quot;,
+        ///			&quot;bitmapResolution&quot;: 2,
+        ///			&quot;rotationCenterX&quot;: 480,
+        ///			&quot;rotationCenterY&quot;: 360
         ///		}],
         ///	&quot;currentCostumeIndex&quot;: 0,
         ///	&quot;penLayerMD5&quot;: &quot;5c81a336fab8be57adc039a8a2b33ca9.png&quot;,
-        ///	&quot;penLayerID&quot;: 0,
-        ///	&quot;tempoBP [字串的其餘部分已遭截斷]&quot;; 的當地語系化字串。
+        ///	&quot;penLayerID&quot;: 0 [字串的其餘部分已遭截斷]&quot;; 的當地語系化字串。
         /// </summary>
         internal static string sb2ProjectJson {
             get {
@@ -344,7 +383,7 @@ namespace _86ME_ver2.Properties {
         ///version 2.1 of the License, or (at your option) any later version.
         ///
         ///This library is distributed in the hope that it will be useful,
-        ///but WITHOUT ANY WARRANTY; without even the [字串的其餘部分已遭截斷]&quot;; 的當地語系化字串。
+        ///but WITHOUT ANY WARRANTY; without even the implied warr [字串的其餘部分已遭截斷]&quot;; 的當地語系化字串。
         /// </summary>
         internal static string scratch_http_server {
             get {
@@ -368,6 +407,16 @@ namespace _86ME_ver2.Properties {
         internal static System.Drawing.Bitmap up_arrow {
             get {
                 object obj = ResourceManager.GetObject("up_arrow", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
+        internal static System.Drawing.Bitmap upmotion {
+            get {
+                object obj = ResourceManager.GetObject("upmotion", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

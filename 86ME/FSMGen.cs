@@ -1,9 +1,45 @@
-﻿using System;
+﻿/*================================================================//
+//     __      ____   ____                                        //
+//   /'_ `\   /'___\ /\  _`\             __                       //
+//  /\ \L\ \ /\ \__/ \ \ \/\ \   __  __ /\_\     ___      ___     //
+//  \/_> _ <_\ \  _``\\ \ \ \ \ /\ \/\ \\/\ \  /' _ `\   / __`\   //
+//    /\ \L\ \\ \ \L\ \\ \ \_\ \\ \ \_\ \\ \ \ /\ \/\ \ /\ \L\ \  //
+//    \ \____/ \ \____/ \ \____/ \ \____/ \ \_\\ \_\ \_\\ \____/  //
+//     \/___/   \/___/   \/___/   \/___/   \/_/ \/_/\/_/ \/___/   //
+//                                                                //
+//                                       http://www.86duino.com   //
+//================================================================//
+  FSMGen.cs - DM&P 86ME
+  Copyright (c) 2017 Sayter <sayter@dmp.com.tw>. All right reserved.
+  Copyright (c) 2018 RoBoardGod <roboardgod@dmp.com.tw>. All right reserved.
+
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 2 of
+  the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+  MA  02110-1301  USA
+
+  (If you need a commercial license, please contact soc@dmp.com.tw
+   to get more information.)
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Windows.Forms;
 using System.IO;
 using System.IO.Compression;
+using System.Drawing;
+using System.Text;
 
 namespace _86ME_ver2
 {
@@ -55,10 +91,13 @@ namespace _86ME_ver2
         private string wifi602_port;
         private int opVar_num;
         private bool IMU_compensatory = false;
+        private bool isFirmata = false; 
+        private bool isWifi = false;
         private Quaternion invQ = new Quaternion();
+        private Image icon;
 
         public FSMGen(NewMotion nMotion, int[] off, ArrayList motionlist, GlobalSettings gs,
-                      int opVar_num, List<ME_Trigger> trigger_cmd, Dictionary<string, string> lang_dic)
+                      int opVar_num, List<ME_Trigger> trigger_cmd, Dictionary<string, string> lang_dic, Image save_icon = null)
         {
             this.FSMGen_lang_dic = lang_dic;
             this.Motion = nMotion;
@@ -106,6 +145,7 @@ namespace _86ME_ver2
                         IMU_compensatory = true;
                 }
             }
+            this.icon = save_icon;
         }
 
         private bool isPureFrame(ME_Motion m)
@@ -138,6 +178,15 @@ namespace _86ME_ver2
 
         private string trigger_condition(ME_Trigger m)
         {
+            if (isFirmata)
+            {
+                if (m.auto_method == (int)auto_method.on)
+                    return "1";
+                else if (m.auto_method == (int)auto_method.off)
+                    return "0";
+                else //title
+                    return m.name.Substring(2) + "_title == 1";
+            }
             switch (m.trigger_method)
             {
                 case (int)mtest_method.always:
@@ -424,7 +473,7 @@ namespace _86ME_ver2
             if (m.trigger_index >= 0)
             {
                 ME_Trigger tr = commands[m.trigger_index];
-                if (tr.trigger_method == (int)mtest_method.acc)
+                if (tr.trigger_method == (int)mtest_method.acc && !isFirmata)
                 {
                     writer.WriteLine(space + "  int acc_state = 0;");
                     writer.WriteLine(space + "  unsigned long acc_time;");
@@ -435,7 +484,7 @@ namespace _86ME_ver2
 
         private void generate_updateIMU(TextWriter writer, List<int> channels, string class_name = "", string space = "")
         {
-            if (method_flag[4])
+            if (method_flag[4] && !isFirmata)
             {
                 if (string.Compare(class_name, "") == 0)
                     writer.WriteLine(space + "void updateIMU()\n{");
@@ -680,34 +729,37 @@ namespace _86ME_ver2
                 writer.WriteLine(space + "void updateCommand()\n" + space + "{");
             else
                 writer.WriteLine(space + "void " + class_name + "::updateCommand()\n" + space + "{");
-            // get input
-            if (method_flag[1])
+            if (!isFirmata)
             {
-                writer.WriteLine(space + "  usb.Task();");
-                for (int i = 0; i < keyboard_keys.Count; i++)
-                    writer.WriteLine(space + "  update_keys_state(" + convert_keynum(keyboard_keys[i]) + ");");
-            }
-            if (method_flag[2])
-            {
-                writer.WriteLine(space + "  if(" + bt_port + ".available()){ " + bt_port + "_Command = " + bt_port + ".read(); }");
-                writer.WriteLine(space + "  else { if(renew_bt) " + bt_port + "_Command = 0xFFF; }");
-            }
-            if (method_flag[3])
-            {
-                writer.WriteLine(space + "  ps2x.read_gamepad();");
-            }
-            if (method_flag[5])
-            {
-                writer.WriteLine(space + "  read_wifi602pad(" + wifi602_port + ");");
-            }
-            if (method_flag[7])
-            {
-                writer.WriteLine(space + "  uint8_t robot_name[13] = \"86DuinoROBOT\";");
-                writer.WriteLine(space + "  wifi.send(2, robot_name, 12);");
-                writer.WriteLine(space + "  uint32_t wifi_recvlen = wifi.recv_nb(&wifi_mux_id, wifi_buffer, sizeof(wifi_buffer));");
-                writer.WriteLine(space + "  if (wifi_recvlen > 0){ strncpy(wifi_cmd, (char*)wifi_buffer, wifi_recvlen);" +
-                                 " wifi_cmd[wifi_recvlen] = \'\\0\';}");
-                writer.WriteLine(space + "  else { if(renew_esp8266) wifi_cmd[0] = \'\\0\'; }");
+                // get input
+                if (method_flag[(int)mtest_method.keyboard])
+                {
+                    writer.WriteLine(space + "  usb.Task();");
+                    for (int i = 0; i < keyboard_keys.Count; i++)
+                        writer.WriteLine(space + "  update_keys_state(" + convert_keynum(keyboard_keys[i]) + ");");
+                }
+                if (method_flag[(int)mtest_method.bluetooth])
+                {
+                    writer.WriteLine(space + "  if(" + bt_port + ".available()){ " + bt_port + "_Command = " + bt_port + ".read(); }");
+                    writer.WriteLine(space + "  else { if(renew_bt) " + bt_port + "_Command = 0xFFF; }");
+                }
+                if (method_flag[(int)mtest_method.ps2])
+                {
+                    writer.WriteLine(space + "  ps2x.read_gamepad();");
+                }
+                if (method_flag[(int)mtest_method.wifi602])
+                {
+                    writer.WriteLine(space + "  read_wifi602pad(" + wifi602_port + ");");
+                }
+                if (method_flag[(int)mtest_method.esp8266])
+                {
+                    writer.WriteLine(space + "  uint8_t robot_name[13] = \"86DuinoROBOT\";");
+                    writer.WriteLine(space + "  wifi.send(2, robot_name, 12);");
+                    writer.WriteLine(space + "  uint32_t wifi_recvlen = wifi.recv_nb(&wifi_mux_id, wifi_buffer, sizeof(wifi_buffer));");
+                    writer.WriteLine(space + "  if (wifi_recvlen > 0){ strncpy(wifi_cmd, (char*)wifi_buffer, wifi_recvlen);" +
+                                     " wifi_cmd[wifi_recvlen] = \'\\0\';}");
+                    writer.WriteLine(space + "  else { if(renew_esp8266) wifi_cmd[0] = \'\\0\'; }");
+                }
             }
             // update commands
             for (int i = 0; i < ME_Motionlist.Count; i++)
@@ -736,218 +788,247 @@ namespace _86ME_ver2
                     writer.WriteLine(space + "  if(isBlocked(1)) return;");
                 // update tirggers
                 bool first = true;
-                for (int i = 0; i < ME_Motionlist.Count; i++) //startup
+                
+                if (!isFirmata)
                 {
-                    ME_Motion m = (ME_Motion)ME_Motionlist[i];
-                    if (m.trigger_index < 0)
-                        continue;
-                    ME_Trigger tr = commands[m.trigger_index];
-                    if (tr.trigger_method == (int)mtest_method.always && tr.auto_method == (int)auto_method.title && m.moton_layer == layer)
+                    for (int i = 0; i < ME_Motionlist.Count; i++) //startup
                     {
-                        string update_mask = "";
-                        if (layer == 1)
-                            update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
-                        if (first)
+                        ME_Motion m = (ME_Motion)ME_Motionlist[i];
+                        if (m.trigger_index < 0)
+                            continue;
+                        ME_Trigger tr = commands[m.trigger_index];
+                        if (tr.trigger_method == (int)mtest_method.always && tr.auto_method == (int)auto_method.title && m.moton_layer == layer)
                         {
-                            writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
-                                             m.name + "_title--;" + update_mask + "}");
-                            first = false;
+                            string update_mask = "";
+                            if (layer == 1)
+                                update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
+                            if (first)
+                            {
+                                writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
+                                                 m.name + "_title--;" + update_mask + "}");
+                                first = false;
+                            }
+                            else
+                                writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
+                                                 m.name + "_title--;" + update_mask + "}");
                         }
-                        else
-                            writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
-                                             m.name + "_title--;" + update_mask + "}");
                     }
-                }
-                for (int i = 0; i < ME_Motionlist.Count; i++) //acc
-                {
-                    ME_Motion m = (ME_Motion)ME_Motionlist[i];
-                    if (m.trigger_index < 0)
-                        continue;
-                    ME_Trigger tr = commands[m.trigger_index];
-                    if (tr.trigger_method == (int)mtest_method.acc && m.moton_layer == layer)
+                    for (int i = 0; i < ME_Motionlist.Count; i++) //acc
                     {
-                        string update_mask = "";
-                        if (layer == 1)
-                            update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
+                        ME_Motion m = (ME_Motion)ME_Motionlist[i];
+                        if (m.trigger_index < 0)
+                            continue;
+                        ME_Trigger tr = commands[m.trigger_index];
+                        if (tr.trigger_method == (int)mtest_method.acc && m.moton_layer == layer)
+                        {
+                            string update_mask = "";
+                            if (layer == 1)
+                                update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
 
-                        if (first)
-                        {
-                            writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                                "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
-                                                m.name + "::acc_state = 3; " + update_mask + "}");
-                            first = false;
+                            if (first)
+                            {
+                                writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                    "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
+                                                    m.name + "::acc_state = 3; " + update_mask + "}");
+                                first = false;
+                            }
+                            else
+                                writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                    "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
+                                                    m.name + "::acc_state = 3; " + update_mask + "}");
                         }
-                        else
-                            writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                                "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
-                                                m.name + "::acc_state = 3; " + update_mask + "}");
                     }
-                }
-                for (int i = 0; i < ME_Motionlist.Count; i++) //analog
-                {
-                    ME_Motion m = (ME_Motion)ME_Motionlist[i];
-                    if (m.trigger_index < 0)
-                        continue;
-                    ME_Trigger tr = commands[m.trigger_index];
-                    if (tr.trigger_method == (int)mtest_method.analog && m.moton_layer == layer)
+                    for (int i = 0; i < ME_Motionlist.Count; i++) //analog
                     {
-                        string update_mask = "";
-                        if (layer == 1)
-                            update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
+                        ME_Motion m = (ME_Motion)ME_Motionlist[i];
+                        if (m.trigger_index < 0)
+                            continue;
+                        ME_Trigger tr = commands[m.trigger_index];
+                        if (tr.trigger_method == (int)mtest_method.analog && m.moton_layer == layer)
+                        {
+                            string update_mask = "";
+                            if (layer == 1)
+                                update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
 
-                        if (first)
-                        {
-                            writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
-                                             update_mask + "}");
-                            first = false;
+                            if (first)
+                            {
+                                writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
+                                                 update_mask + "}");
+                                first = false;
+                            }
+                            else
+                                writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
+                                                 update_mask + "}");
                         }
-                        else
-                            writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
-                                             update_mask + "}");
                     }
-                }
-                for (int i = 0; i < ME_Motionlist.Count; i++) //esp8266
-                {
-                    ME_Motion m = (ME_Motion)ME_Motionlist[i];
-                    if (m.trigger_index < 0)
-                        continue;
-                    ME_Trigger tr = commands[m.trigger_index];
-                    if (tr.trigger_method == (int)mtest_method.esp8266 && m.moton_layer == layer)
+                    for (int i = 0; i < ME_Motionlist.Count; i++) //esp8266
                     {
-                        string renew_esp8266 = "";
-                        string update_mask = "";
-                        if (layer == 1)
-                            update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
+                        ME_Motion m = (ME_Motion)ME_Motionlist[i];
+                        if (m.trigger_index < 0)
+                            continue;
+                        ME_Trigger tr = commands[m.trigger_index];
+                        if (tr.trigger_method == (int)mtest_method.esp8266 && m.moton_layer == layer)
+                        {
+                            string renew_esp8266 = "";
+                            string update_mask = "";
+                            if (layer == 1)
+                                update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
 
-                        if (String.Compare(tr.esp8266_mode, "OneShot") == 0)
-                            renew_esp8266 = "renew_esp8266 = true;";
-                        else
-                            renew_esp8266 = "renew_esp8266 = false;";
-                        if (first)
-                        {
-                            writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
-                                             renew_esp8266 + update_mask + "}");
-                            first = false;
+                            if (String.Compare(tr.esp8266_mode, "OneShot") == 0)
+                                renew_esp8266 = "renew_esp8266 = true;";
+                            else
+                                renew_esp8266 = "renew_esp8266 = false;";
+                            if (first)
+                            {
+                                writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
+                                                 renew_esp8266 + update_mask + "}");
+                                first = false;
+                            }
+                            else
+                                writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
+                                                 renew_esp8266 + update_mask + "}");
                         }
-                        else
-                            writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
-                                             renew_esp8266 + update_mask + "}");
                     }
-                }
-                for (int i = 0; i < ME_Motionlist.Count; i++) //bt
-                {
-                    ME_Motion m = (ME_Motion)ME_Motionlist[i];
-                    if (m.trigger_index < 0)
-                        continue;
-                    ME_Trigger tr = commands[m.trigger_index];
-                    if (tr.trigger_method == (int)mtest_method.bluetooth && m.moton_layer == layer)
+                    for (int i = 0; i < ME_Motionlist.Count; i++) //bt
                     {
-                        string renew_bt = "";
-                        string update_mask = "";
-                        if (layer == 1)
-                            update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
+                        ME_Motion m = (ME_Motion)ME_Motionlist[i];
+                        if (m.trigger_index < 0)
+                            continue;
+                        ME_Trigger tr = commands[m.trigger_index];
+                        if (tr.trigger_method == (int)mtest_method.bluetooth && m.moton_layer == layer)
+                        {
+                            string renew_bt = "";
+                            string update_mask = "";
+                            if (layer == 1)
+                                update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
 
-                        if (String.Compare(tr.bt_mode, "OneShot") == 0)
-                            renew_bt = "renew_bt = true;";
-                        else
-                            renew_bt = "renew_bt = false;";
-                        if (first)
-                        {
-                            writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
-                                             renew_bt + update_mask + "}");
-                            first = false;
+                            if (String.Compare(tr.bt_mode, "OneShot") == 0)
+                                renew_bt = "renew_bt = true;";
+                            else
+                                renew_bt = "renew_bt = false;";
+                            if (first)
+                            {
+                                writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
+                                                 renew_bt + update_mask + "}");
+                                first = false;
+                            }
+                            else
+                                writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
+                                                 renew_bt + update_mask + "}");
                         }
-                        else
-                            writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
-                                             renew_bt + update_mask + "}");
                     }
-                }
-                for (int i = 0; i < ME_Motionlist.Count; i++) //wifi602
-                {
-                    ME_Motion m = (ME_Motion)ME_Motionlist[i];
-                    if (m.trigger_index < 0)
-                        continue;
-                    ME_Trigger tr = commands[m.trigger_index];
-                    if (tr.trigger_method == (int)mtest_method.wifi602 && m.moton_layer == layer)
+                    for (int i = 0; i < ME_Motionlist.Count; i++) //wifi602
                     {
-                        string update_mask = "";
-                        if (layer == 1)
-                            update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
+                        ME_Motion m = (ME_Motion)ME_Motionlist[i];
+                        if (m.trigger_index < 0)
+                            continue;
+                        ME_Trigger tr = commands[m.trigger_index];
+                        if (tr.trigger_method == (int)mtest_method.wifi602 && m.moton_layer == layer)
+                        {
+                            string update_mask = "";
+                            if (layer == 1)
+                                update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
 
-                        if (first)
-                        {
-                            writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
-                                             update_mask + "}");
-                            first = false;
+                            if (first)
+                            {
+                                writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
+                                                 update_mask + "}");
+                                first = false;
+                            }
+                            else
+                                writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
+                                                 update_mask + "}");
                         }
-                        else
-                            writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" +
-                                             update_mask + "}");
                     }
-                }
-                for (int i = 0; i < ME_Motionlist.Count; i++)
-                {
-                    ME_Motion m = (ME_Motion)ME_Motionlist[i];
-                    if (m.trigger_index < 0)
-                        continue;
-                    ME_Trigger tr = commands[m.trigger_index];
-                    if (!(tr.trigger_method == (int)mtest_method.always && tr.auto_method == (int)auto_method.on) &&
-                        !(tr.trigger_method == (int)mtest_method.always && tr.auto_method == (int)auto_method.title) &&
-                        !(tr.trigger_method == (int)mtest_method.bluetooth) && !(tr.trigger_method == (int)mtest_method.acc) &&
-                        !(tr.trigger_method == (int)mtest_method.wifi602) && !(tr.trigger_method == (int)mtest_method.analog) &&
-                        !(tr.trigger_method == (int)mtest_method.esp8266) && m.moton_layer == layer)
+                    for (int i = 0; i < ME_Motionlist.Count; i++)
                     {
-                        string cancel_release = "";
-                        string update_mask = "";
-                        if (layer == 1)
-                            update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
+                        ME_Motion m = (ME_Motion)ME_Motionlist[i];
+                        if (m.trigger_index < 0)
+                            continue;
+                        ME_Trigger tr = commands[m.trigger_index];
+                        if (!(tr.trigger_method == (int)mtest_method.always && tr.auto_method == (int)auto_method.on) &&
+                            !(tr.trigger_method == (int)mtest_method.always && tr.auto_method == (int)auto_method.title) &&
+                            !(tr.trigger_method == (int)mtest_method.bluetooth) && !(tr.trigger_method == (int)mtest_method.acc) &&
+                            !(tr.trigger_method == (int)mtest_method.wifi602) && !(tr.trigger_method == (int)mtest_method.analog) &&
+                            !(tr.trigger_method == (int)mtest_method.esp8266) && m.moton_layer == layer)
+                        {
+                            string cancel_release = "";
+                            string update_mask = "";
+                            if (layer == 1)
+                                update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
 
-                        if (tr.trigger_method == (int)mtest_method.keyboard && tr.keyboard_Type == (int)keyboard_method.release)
-                            cancel_release = "keys_state[" + convert_keynum(tr.keyboard_key) + "] = 0;";
-                        if (first)
-                        {
-                            writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
-                                             cancel_release + update_mask + "}");
-                            first = false;
+                            if (tr.trigger_method == (int)mtest_method.keyboard && tr.keyboard_Type == (int)keyboard_method.release)
+                                cancel_release = "keys_state[" + convert_keynum(tr.keyboard_key) + "] = 0;";
+                            if (first)
+                            {
+                                writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                    "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
+                                                    cancel_release + update_mask + "}");
+                                first = false;
+                            }
+                            else
+                                writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                    "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
+                                                    cancel_release + update_mask + "}");
                         }
-                        else
-                            writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + "; " +
-                                             cancel_release + update_mask + "}");
+                    }
+                    for (int i = 0; i < ME_Motionlist.Count; i++) //always
+                    {
+                        ME_Motion m = (ME_Motion)ME_Motionlist[i];
+                        if (m.trigger_index < 0)
+                            continue;
+                        ME_Trigger tr = commands[m.trigger_index];
+                        if (tr.trigger_method == (int)mtest_method.always &&
+                            tr.auto_method == (int)auto_method.on && m.moton_layer == layer)
+                        {
+                            string update_mask = "";
+                            if (layer == 1)
+                                update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
+                            if (first)
+                            {
+                                writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" + update_mask + "}");
+                                first = false;
+                            }
+                            else
+                                writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" + update_mask + "}");
+                        }
                     }
                 }
-                for (int i = 0; i < ME_Motionlist.Count; i++) //always
+                else
                 {
-                    ME_Motion m = (ME_Motion)ME_Motionlist[i];
-                    if (m.trigger_index < 0)
-                        continue;
-                    ME_Trigger tr = commands[m.trigger_index];
-                    if (tr.trigger_method == (int)mtest_method.always &&
-                        tr.auto_method == (int)auto_method.on && m.moton_layer == layer)
+                    for (int i = 0; i < ME_Motionlist.Count; i++) //firmata
                     {
+                        ME_Motion m = (ME_Motion)ME_Motionlist[i];
+                        if (m.trigger_index < 0)
+                            continue;
+                        ME_Trigger tr = commands[m.trigger_index];
                         string update_mask = "";
-                        if (layer == 1)
-                            update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
-                        if (first)
+                        if(m.moton_layer == layer)
                         {
-                            writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" + update_mask + "}");
-                            first = false;
+                            if (layer == 1)
+                                update_mask = "memcpy(servo_mask, " + m.name + "::mask, sizeof(servo_mask));";
+                            if (first)
+                            {
+                                writer.WriteLine(space + "  if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" + update_mask + "}");
+                                first = false;
+                            }
+                            else
+                                writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
+                                                 "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" + update_mask + "}");
                         }
-                        else
-                            writer.WriteLine(space + "  else if(_86ME_cmd[" + m.trigger_index + "]) " +
-                                             "{_curr_motion[" + layer + "] = _" + m.name.ToUpper() + ";" + update_mask + "}");
                     }
                 }
                 if (first)
@@ -1475,14 +1556,17 @@ namespace _86ME_ver2
             if (include_arduino)
                 writer.WriteLine("#include <Arduino.h>");
             writer.WriteLine("#include <Servo86.h>");
-            if (method_flag[1]) // keyboard
-                writer.WriteLine("#include <KeyboardController.h>");
-            if (method_flag[3]) // ps2
-                writer.WriteLine("#include <PS2X_lib.h>");
-            if (method_flag[4]) // acc
-                writer.WriteLine("#include <EEPROM.h>\n#include <FreeIMU1.h>\n#include <Wire.h>");
-            if (method_flag[7]) // esp8266
-                writer.WriteLine("#include <ESP8266.h>");
+            if (!isFirmata)
+            {
+                if (method_flag[(int)mtest_method.keyboard]) // keyboard
+                    writer.WriteLine("#include <KeyboardController.h>");
+                if (method_flag[(int)mtest_method.ps2]) // ps2
+                    writer.WriteLine("#include <PS2X_lib.h>");
+                if (method_flag[(int)mtest_method.acc]) // acc
+                    writer.WriteLine("#include <EEPROM.h>\n#include <FreeIMU1.h>\n#include <Wire.h>");
+                if (method_flag[(int)mtest_method.esp8266]) // esp8266
+                    writer.WriteLine("#include <ESP8266.h>");
+            }
             writer.WriteLine();
         }
 
@@ -1501,45 +1585,48 @@ namespace _86ME_ver2
             }
 
             writer.WriteLine("  srand(time(NULL));");
-
-            if (method_flag[2]) // bt
-                writer.WriteLine("  " + bt_port + ".begin(" + bt_baud + ");");
-
-            if (method_flag[3]) // ps2
-                writer.WriteLine("  ps2x.config_gamepad(" + ps2_pins[3] + ", " + ps2_pins[1] +
-                                 ", " + ps2_pins[2] + ", " + ps2_pins[0] + ", false, false);\n");
-            if (method_flag[4]) // acc
+            if (!isFirmata)
             {
-                string sp = "";
-                if (string.Compare(class_name, "") != 0)
+
+                if (method_flag[(int)mtest_method.bluetooth]) // bt
+                    writer.WriteLine("  " + bt_port + ".begin(" + bt_baud + ");");
+
+                if (method_flag[(int)mtest_method.ps2]) // ps2
+                    writer.WriteLine("  ps2x.config_gamepad(" + ps2_pins[3] + ", " + ps2_pins[1] +
+                                     ", " + ps2_pins[2] + ", " + ps2_pins[0] + ", false, false);\n");
+                if (method_flag[(int)mtest_method.acc]) // acc
                 {
-                    writer.WriteLine("  if(initIMU)\n  {");
-                    sp = "  ";
+                    string sp = "";
+                    if (string.Compare(class_name, "") != 0)
+                    {
+                        writer.WriteLine("  if(initIMU)\n  {");
+                        sp = "  ";
+                    }
+                    if (Motion.comboBox2.SelectedIndex == 1) //LSM330DLC of One
+                        writer.WriteLine(sp + "  Wire.begin();\n" + sp + "  delay(5);\n" + sp +
+                                         "  _IMU_init_status = _IMU.initEX(0, true);\n" + sp + "  delay(5);");
+                    else if (Motion.comboBox2.SelectedIndex == 2) //RM-G146
+                        writer.WriteLine(sp + "  Wire.begin();\n" + sp + "  delay(5);\n" + sp +
+                                         "  _IMU_init_status = _IMU.initEX(2, true);\n" + sp + "  delay(5);");
+                    else if (Motion.comboBox2.SelectedIndex == 3) //LSM330DLC of AI
+                        writer.WriteLine(sp + "  Wire.begin();\n" + sp + "  delay(5);\n" + sp +
+                                         "  _IMU_init_status = _IMU.initEX(3, true);\n" + sp + "  delay(5);");
+                    if (string.Compare(class_name, "") != 0)
+                        writer.WriteLine("  }");
                 }
-                if (Motion.comboBox2.SelectedIndex == 1) //LSM330DLC of One
-                    writer.WriteLine(sp + "  Wire.begin();\n" + sp + "  delay(5);\n" + sp +
-                                     "  _IMU_init_status = _IMU.initEX(0, true);\n" + sp + "  delay(5);");
-                else if (Motion.comboBox2.SelectedIndex == 2) //RM-G146
-                    writer.WriteLine(sp + "  Wire.begin();\n" + sp + "  delay(5);\n" + sp +
-                                     "  _IMU_init_status = _IMU.initEX(2, true);\n" + sp + "  delay(5);");
-                else if (Motion.comboBox2.SelectedIndex == 3) //LSM330DLC of AI
-                    writer.WriteLine(sp + "  Wire.begin();\n" + sp + "  delay(5);\n" + sp +
-                                     "  _IMU_init_status = _IMU.initEX(3, true);\n" + sp + "  delay(5);");
-                if (string.Compare(class_name, "") != 0)
-                    writer.WriteLine("  }");
-            }
 
-            if (method_flag[5]) // wifi602
-                writer.WriteLine("  " + wifi602_port + ".begin(115200);");
+                if (method_flag[(int)mtest_method.wifi602]) // wifi602
+                    writer.WriteLine("  " + wifi602_port + ".begin(115200);");
 
-            if (method_flag[7]) // esp8266
-            {
-                writer.WriteLine("  wifi.init(" + esp8266_port + ", " + esp8266_baud + ", " + esp8266_chpd + ");");
-                writer.WriteLine("  wifi.setOprToSoftAP();");
-                writer.WriteLine("  wifi.enableMUX();");
-                writer.WriteLine("  wifi.startTCPServer(23);");
-                writer.WriteLine("  wifi.registerUDP(2, \"255.255.255.255\", 6000);");
-                writer.WriteLine("  wifi.disableEcho();");
+                if (method_flag[(int)mtest_method.esp8266]) // esp8266
+                {
+                    writer.WriteLine("  wifi.init(" + esp8266_port + ", " + esp8266_baud + ", " + esp8266_chpd + ");");
+                    writer.WriteLine("  wifi.setOprToSoftAP();");
+                    writer.WriteLine("  wifi.enableMUX();");
+                    writer.WriteLine("  wifi.startTCPServer(23);");
+                    writer.WriteLine("  wifi.registerUDP(2, \"255.255.255.255\", 6000);");
+                    writer.WriteLine("  wifi.disableEcho();");
+                }
             }
 
             for (int i = 0; i < channels.Count; i++)
@@ -1612,7 +1699,7 @@ namespace _86ME_ver2
             writer.WriteLine();
             writer.WriteLine("  offsets.setOffsets();");
             writer.WriteLine();
-            if (method_flag[4])
+            if (method_flag[(int)mtest_method.acc] && !isFirmata)
             {
                 writer.WriteLine("  if(_IMU_init_status == 0)\n  {\n    for(int i = 0; i < 5; i++)\n" +
                                  "    {\n      _IMU.getQ(_IMU_Q, _IMU_val);\n" +
@@ -1631,7 +1718,7 @@ namespace _86ME_ver2
             else
                 writer.WriteLine("void " + class_name + "::update()");
             writer.WriteLine("{");
-            if (method_flag[4]) //IMU
+            if (method_flag[(int)mtest_method.acc] && !isFirmata) //IMU
             {
                 writer.WriteLine("  updateCompRange();");
                 writer.WriteLine("  updateIMU();");
@@ -1695,17 +1782,20 @@ namespace _86ME_ver2
 
         private void generate_global_var(TextWriter writer, string space = "")
         {
-            if (method_flag[1]) // keyboard
+            if (!isFirmata)
             {
-                writer.WriteLine(space + "void keyPressed(void);");
-                writer.WriteLine(space + "void keyReleased(void);");
-                writer.WriteLine(space + "void update_keys_state(int k);");
-            }
-            if (method_flag[5]) // wifi602
-            {
-                writer.WriteLine(space + "bool check_wifi602_data(int* data);");
-                writer.WriteLine(space + "void read_wifi602pad(HardwareSerial &uart);");
-            }
+                if (method_flag[(int)mtest_method.keyboard]) // keyboard
+                {
+                    writer.WriteLine(space + "void keyPressed(void);");
+                    writer.WriteLine(space + "void keyReleased(void);");
+                    writer.WriteLine(space + "void update_keys_state(int k);");
+                }
+                if (method_flag[(int)mtest_method.wifi602]) // wifi602
+                {
+                    writer.WriteLine(space + "bool check_wifi602_data(int* data);");
+                    writer.WriteLine(space + "void read_wifi602pad(HardwareSerial &uart);");
+                }
+            } 
         }
 
         private void generate_class(TextWriter writer, string class_name, List<int> channels)
@@ -1891,93 +1981,96 @@ namespace _86ME_ver2
 
         private void generate_functions(TextWriter writer, string class_name, List<int> channels)
         {
-            if (method_flag[1]) // keyboard
+            if (!isFirmata)
             {
-                writer.WriteLine("USBHost usb;");
-                writer.WriteLine("KeyboardController keyboard(usb);");
-                writer.WriteLine("int keys_state[128] = {0};");
-                writer.WriteLine("int keys_pressed[128] = {0};");
-                writer.WriteLine("void keyPressed() { keys_pressed[keyboard.getOemKey()] = 1; }");
-                writer.WriteLine("void keyReleased() { keys_pressed[keyboard.getOemKey()] = 0; }");
-                writer.WriteLine("void update_keys_state(int k)\n" +
-                                 "{\n" +
-                                 "  if(keys_pressed[k] == 1 && (keys_state[k]&2) != 2)\n" +
-                                 "      keys_state[k] = 2;\n" +
-                                 "  else if(keys_pressed[k] == 1 && (keys_state[k]&2) == 2)\n" +
-                                 "    keys_state[k] = 3;\n" +
-                                 "  else if(keys_pressed[k] == 0 && (keys_state[k]&2) == 2)\n" +
-                                 "    keys_state[k] = 1;\n" +
-                                 "  else\n" +
-                                 "    keys_state[k] = 0;\n" +
-                                 "}");
-            }
-            if (method_flag[2]) // bt
-            {
-                writer.WriteLine("int " + bt_port + "_Command = 0xFFF;");
-                writer.WriteLine("bool renew_bt = true;");
-            }
-            if (method_flag[3]) // ps2
-                writer.WriteLine("PS2X ps2x;");
-            if (method_flag[4]) // acc
-            {
-                writer.WriteLine("unsigned long _IMU_update_time = millis();");
-                writer.WriteLine("FreeIMU1 _IMU = FreeIMU1();");
-                writer.WriteLine("long _mixOffsets[45] = {0};");
-            }
-            if (method_flag[5]) // wifi602
-            {
-                writer.WriteLine("bool wifi602_frame_start = false;");
-                writer.WriteLine("int wifi602_data[11] = {0};");
-                writer.WriteLine("bool check_wifi602_data(int* data)\n" +
-                                 "{\n" +
-                                 "  if(data == NULL)\n" +
-                                 "  {\n" +
-                                 "    wifi602_frame_start = false;\n" +
-                                 "    return false;\n" +
-                                 "  }\n" +
-                                 "  int checksum = data[1];\n" +
-                                 "  for(int i = 2; i < 10; i++)\n" +
-                                 "    checksum ^= data[i];\n" +
-                                 "  if(checksum != data[0] || data[10] != 0x82)\n" +
-                                 "  {\n" +
-                                 "    wifi602_frame_start = false;\n" +
-                                 "    return false;\n" +
-                                 "  }\n" +
-                                 "  return true;\n" +
-                                 "}");
-                writer.WriteLine("void " + "read_wifi602pad(HardwareSerial &uart)\n" +
-                                 "{\n" +
-                                 "  int tmp[11];\n" +
-                                 "  if(wifi602_frame_start == false)\n" +
-                                 "  {\n" +
-                                 "    if(uart.available())\n" +
-                                 "      if(uart.read() == 0x81)\n" +
-                                 "        wifi602_frame_start = true;\n" +
-                                 "  }\n" +
-                                 "  else if(wifi602_frame_start == true)\n" +
-                                 "  {\n" +
-                                 "    if(uart.available() >= 11)\n" +
-                                 "    {\n" +
-                                 "      for(int i = 0; i < 11; i++)\n" +
-                                 "        tmp[i] = uart.read();\n" +
-                                 "      if(check_wifi602_data(tmp))\n" +
-                                 "      {\n" +
-                                 "        tmp[2] > 100? wifi602_data[2] = tmp[2] - 256 : wifi602_data[2] = tmp[2];\n" +
-                                 "        tmp[3] > 100? wifi602_data[3] = tmp[3] - 256 : wifi602_data[3] = tmp[3];\n" +
-                                 "        tmp[4] > 100? wifi602_data[4] = tmp[4] - 256 : wifi602_data[4] = tmp[4];\n" +
-                                 "      }\n" +
-                                 "      wifi602_frame_start = false;\n" +
-                                 "    }\n" +
-                                 "  }\n" +
-                                 "}");
-            }
-            if (method_flag[7]) // esp8266
-            {
-                writer.WriteLine("char wifi_cmd[128] = {0};");
-                writer.WriteLine("bool renew_esp8266 = true;");
-                writer.WriteLine("ESP8266 wifi;");
-                writer.WriteLine("uint8_t wifi_buffer[128] = {0};");
-                writer.WriteLine("uint8_t wifi_mux_id;");
+                if (method_flag[(int)mtest_method.keyboard]) // keyboard
+                {
+                    writer.WriteLine("USBHost usb;");
+                    writer.WriteLine("KeyboardController keyboard(usb);");
+                    writer.WriteLine("int keys_state[128] = {0};");
+                    writer.WriteLine("int keys_pressed[128] = {0};");
+                    writer.WriteLine("void keyPressed() { keys_pressed[keyboard.getOemKey()] = 1; }");
+                    writer.WriteLine("void keyReleased() { keys_pressed[keyboard.getOemKey()] = 0; }");
+                    writer.WriteLine("void update_keys_state(int k)\n" +
+                                     "{\n" +
+                                     "  if(keys_pressed[k] == 1 && (keys_state[k]&2) != 2)\n" +
+                                     "      keys_state[k] = 2;\n" +
+                                     "  else if(keys_pressed[k] == 1 && (keys_state[k]&2) == 2)\n" +
+                                     "    keys_state[k] = 3;\n" +
+                                     "  else if(keys_pressed[k] == 0 && (keys_state[k]&2) == 2)\n" +
+                                     "    keys_state[k] = 1;\n" +
+                                     "  else\n" +
+                                     "    keys_state[k] = 0;\n" +
+                                     "}");
+                }
+                if (method_flag[(int)mtest_method.bluetooth]) // bt
+                {
+                    writer.WriteLine("int " + bt_port + "_Command = 0xFFF;");
+                    writer.WriteLine("bool renew_bt = true;");
+                }
+                if (method_flag[(int)mtest_method.ps2]) // ps2
+                    writer.WriteLine("PS2X ps2x;");
+                if (method_flag[(int)mtest_method.acc]) // acc
+                {
+                    writer.WriteLine("unsigned long _IMU_update_time = millis();");
+                    writer.WriteLine("FreeIMU1 _IMU = FreeIMU1();");
+                    writer.WriteLine("long _mixOffsets[45] = {0};");
+                }
+                if (method_flag[(int)mtest_method.wifi602]) // wifi602
+                {
+                    writer.WriteLine("bool wifi602_frame_start = false;");
+                    writer.WriteLine("int wifi602_data[11] = {0};");
+                    writer.WriteLine("bool check_wifi602_data(int* data)\n" +
+                                     "{\n" +
+                                     "  if(data == NULL)\n" +
+                                     "  {\n" +
+                                     "    wifi602_frame_start = false;\n" +
+                                     "    return false;\n" +
+                                     "  }\n" +
+                                     "  int checksum = data[1];\n" +
+                                     "  for(int i = 2; i < 10; i++)\n" +
+                                     "    checksum ^= data[i];\n" +
+                                     "  if(checksum != data[0] || data[10] != 0x82)\n" +
+                                     "  {\n" +
+                                     "    wifi602_frame_start = false;\n" +
+                                     "    return false;\n" +
+                                     "  }\n" +
+                                     "  return true;\n" +
+                                     "}");
+                    writer.WriteLine("void " + "read_wifi602pad(HardwareSerial &uart)\n" +
+                                     "{\n" +
+                                     "  int tmp[11];\n" +
+                                     "  if(wifi602_frame_start == false)\n" +
+                                     "  {\n" +
+                                     "    if(uart.available())\n" +
+                                     "      if(uart.read() == 0x81)\n" +
+                                     "        wifi602_frame_start = true;\n" +
+                                     "  }\n" +
+                                     "  else if(wifi602_frame_start == true)\n" +
+                                     "  {\n" +
+                                     "    if(uart.available() >= 11)\n" +
+                                     "    {\n" +
+                                     "      for(int i = 0; i < 11; i++)\n" +
+                                     "        tmp[i] = uart.read();\n" +
+                                     "      if(check_wifi602_data(tmp))\n" +
+                                     "      {\n" +
+                                     "        tmp[2] > 100? wifi602_data[2] = tmp[2] - 256 : wifi602_data[2] = tmp[2];\n" +
+                                     "        tmp[3] > 100? wifi602_data[3] = tmp[3] - 256 : wifi602_data[3] = tmp[3];\n" +
+                                     "        tmp[4] > 100? wifi602_data[4] = tmp[4] - 256 : wifi602_data[4] = tmp[4];\n" +
+                                     "      }\n" +
+                                     "      wifi602_frame_start = false;\n" +
+                                     "    }\n" +
+                                     "  }\n" +
+                                     "}");
+                }
+                if (method_flag[(int)mtest_method.esp8266]) // esp8266
+                {
+                    writer.WriteLine("char wifi_cmd[128] = {0};");
+                    writer.WriteLine("bool renew_esp8266 = true;");
+                    writer.WriteLine("ESP8266 wifi;");
+                    writer.WriteLine("uint8_t wifi_buffer[128] = {0};");
+                    writer.WriteLine("uint8_t wifi_mux_id;");
+                }
             }
             generate_updateIMU(writer, channels, class_name);
             generate_isBlocked(writer, class_name);
@@ -2071,6 +2164,7 @@ namespace _86ME_ver2
 
         public void generate_AllinOne()
         {
+            isFirmata = false;
             FolderBrowserDialog path = new FolderBrowserDialog();
             path.Description = FSMGen_lang_dic["GenerateAllInOne_Description"];
             var dialogResult = path.ShowDialog();
@@ -2140,6 +2234,7 @@ namespace _86ME_ver2
 
         private void generate_LibrarayWithPath(string path, string library_dir = "")
         {
+            isFirmata = false;
             List<int> channels = new List<int>();
             List<int> angle = new List<int>();
             List<uint> home = new List<uint>();
@@ -2206,9 +2301,11 @@ namespace _86ME_ver2
             bool first = true;
             if (channels.Count != 45)
             {
-                writer.Write("int available_digital_pins[" + (45 - channels.Count) + "] = {");
+                writer.Write("int available_digital_pins[" + (45 - channels.Count - (isWifi ? 2 : 0)) + "] = {");
                 for (int i = 0; i < 45; i++)
                 {
+                    if (isWifi && (i == 7 || i == 10))
+                        continue;
                     if (!channels.Contains(i))
                     {
                         if (first)
@@ -2226,67 +2323,121 @@ namespace _86ME_ver2
 
         private void generate_FirmataPlus(string path, ScratchProperty properties)
         {
-            List<int> channels = new List<int>();
-            List<int> angle = new List<int>();
-            List<uint> home = new List<uint>();
-            get_positions(channels, angle, home);
-            string class_name = "Robot86ME";
-            TextWriter writer = new StreamWriter(path + "\\ScratchProject.ino");
+            isFirmata = true;
+            String[] methodname = { "USB", "bluetooth", "wifi", "ethernet", "esp8266", "esp8266AP" };
+            for(int j = 0; j < (int)firmata_method.last; j++)
+            {
+                if (properties.method[j])
+                {
+                    List<int> channels = new List<int>();
+                    List<int> angle = new List<int>();
+                    List<uint> home = new List<uint>();
+                    get_positions(channels, angle, home);
+                    if((int)firmata_method.wifi == j)
+                    {
+                        isWifi = true;
+                        if (channels.Contains(7) || channels.Contains(10))
+                            continue;
+                    }
+                    string class_name = "Robot86ME";
+                    Directory.CreateDirectory(path + "\\" + methodname[j]);
+                    TextWriter writer = new StreamWriter(path + "\\" + methodname[j] + "\\" + methodname[j] + ".ino");
+                    string template = "";
+                    template = Properties.Resources.FirmataPlusAll;
 
-            string template = "";
-            if (properties.method == (int)firmata_method.serial)
-            {
-                template = Properties.Resources.FirmataPlus;
-            }
-            else if (properties.method == (int)firmata_method.bluetooth)
-            {
-                template = Properties.Resources.FirmataPlusBluetooth86;
-                template = template.Replace("Serial1", properties.bt_serial);
-                template = template.Replace("9600", properties.bt_baud);
+                    template = template.Replace("#define CONNECT_86DUINO_METHOD 0", "#define CONNECT_86DUINO_METHOD " + j.ToString());
+                    template = template.Replace("Hello, 86Duino", properties.project_name);
+                    switch (j)
+                    {
+                        case (int)firmata_method.serial:
+                            break;
+                        case (int)firmata_method.bluetooth:
+                            template = template.Replace("Serial1", properties.bt_serial);
+                            template = template.Replace("9600", properties.bt_baud);
+                            break;
+                        case (int)firmata_method.wifi:
+                            template = template.Replace("your SSID", properties.wifi_ssid);
+                            template = template.Replace("your password", properties.wifi_password);
+                            break;
+                        case (int)firmata_method.ethernet:
+                            break;
+                        case (int)firmata_method.esp8266:
+                            //template = template.Replace("int ch_pd_pin = 10;", "int ch_pd_pin = " + properties.esp_chpd + ";");
+                            template = template.Replace("Serial1", properties.esp_serial);
+                            template = template.Replace("9600", properties.esp_baud);
+                            template = template.Replace("your SSID", properties.esp_ssid);
+                            template = template.Replace("your password", properties.esp_password);
+                            break;
+                        case (int)firmata_method.esp8266AP:
+                            template = template.Replace("Serial1", properties.espAP_serial);
+                            template = template.Replace("9600", properties.espAP_baud);
+                            template = template.Replace("your SSID", properties.espAP_ssid);
+                            template = template.Replace("your password", properties.espAP_password);
+                            break;
+                    }
+                    string[] FirmataPlus = template.Split(new string[] { "// 86ME include lib" }, StringSplitOptions.None);
+                    writer.WriteLine(FirmataPlus[0]);
+                    generate_include_headers(writer, false);
+                    FirmataPlus = FirmataPlus[1].Split(new string[] { "// 86ME global variable" }, StringSplitOptions.None);
+                    writer.WriteLine(FirmataPlus[0]);
+                    generate_global_var(writer);
+                    generate_avalable_pins(writer, channels);
+                    writer.WriteLine(   "int busy_id;\n" +
+                                        "int motion_id;\n" +
+                                        "int motion_times;\n");
+                    FirmataPlus = FirmataPlus[1].Split(new string[] { "// 86ME class" }, StringSplitOptions.None);
+                    writer.WriteLine(FirmataPlus[0]);
+                    generate_class(writer, class_name, channels);
+                    FirmataPlus = FirmataPlus[1].Split(new string[] { "// 86ME namespace" }, StringSplitOptions.None);
+                    for (int i = 0; i < ME_Motionlist.Count; i++)
+                        generate_namespace((ME_Motion)ME_Motionlist[i], writer, channels);
+                    FirmataPlus = FirmataPlus[1].Split(new string[] { "// 86ME functions" }, StringSplitOptions.None);
+                    writer.WriteLine(FirmataPlus[0]);
+                    generate_constructor(writer, class_name, channels, home);
+                    generate_functions(writer, class_name, channels);
+                    generate_setup(writer, channels, home, true, angle, class_name);
+                    generate_loop(writer, class_name);
+                    writer.WriteLine("\nRobot86ME robot;");
+                    string insert = "\n";
+                    insert += "\n    case PERFORM_MOTION:" +
+                              "\n      busy_id = (int)argv[0] | ((int)argv[1] << 7);" +
+                              "\n      motion_id = (int)argv[2] | ((int)argv[3] << 7);" +
+                              "\n      motion_times = (int)argv[4] | ((int)argv[5] << 7);";
+                    for (int i = 0; i < ME_Motionlist.Count; i++)
+                    {
+                        ME_Motion m = (ME_Motion)ME_Motionlist[i];
+                        if (i == 0)
+                            insert += "\n      if (motion_id == " + i + ") robot." + m.name + "(motion_times);";
+                        else
+                            insert += "\n      else if (motion_id == " + i + ") robot." + m.name + "(motion_times);";
+                    }
+                    insert += "\n      Firmata.write(START_SYSEX);" +
+                              "\n      Firmata.write(PERFORM_MOTION_RESPONSE);" +
+                              "\n      Firmata.write(busy_id & 0x7F);" +
+                              "\n      Firmata.write((busy_id >> 7) & 0x7F);" +
+                              "\n      Firmata.write(99);" +
+                              "\n      Firmata.write(END_SYSEX);" +
+                              "\n      break;";
+                    FirmataPlus[1] = FirmataPlus[1].Replace("// 86ME perform motions case", insert);
+                    insert = "\n";
+                    if (channels.Count != 45)
+                    {
+                        insert += "  for (byte i = 0; i < " + (45 - channels.Count - (isWifi ? 2 : 0)) + "; i++) {\n" +
+                                  "    if (!IS_PIN_ANALOG(available_digital_pins[i])) {\n" +
+                                  "      // sets the output to 0, configures portConfigInputs\n" +
+                                  "      setPinModeCallback(available_digital_pins[i], OUTPUT);\n" +
+                                  "    }\n" +
+                                  "  }";
+                    }
+                    FirmataPlus[1] = FirmataPlus[1].Replace("// 86ME reset digital pins", insert);
+                    writer.WriteLine(FirmataPlus[1].Replace("// 86ME setup begin", "robot.begin(false);"));
+                    writer.Dispose();
+                    writer.Close();
+                }
+                isWifi = false;
             }
 
-            string[] FirmataPlus = template.Split(new string[] { "// 86ME include lib" }, StringSplitOptions.None);
-            writer.WriteLine(FirmataPlus[0]);
-            generate_include_headers(writer, false);
-            FirmataPlus = FirmataPlus[1].Split(new string[] { "// 86ME global variable" }, StringSplitOptions.None);
-            writer.WriteLine(FirmataPlus[0]);
-            generate_global_var(writer);
-            generate_avalable_pins(writer, channels);
-            FirmataPlus = FirmataPlus[1].Split(new string[] { "// 86ME class" }, StringSplitOptions.None);
-            writer.WriteLine(FirmataPlus[0]);
-            generate_class(writer, class_name, channels);
-            FirmataPlus = FirmataPlus[1].Split(new string[] { "// 86ME namespace" }, StringSplitOptions.None);
-            for (int i = 0; i < ME_Motionlist.Count; i++)
-                generate_namespace((ME_Motion)ME_Motionlist[i], writer, channels);
-            FirmataPlus = FirmataPlus[1].Split(new string[] { "// 86ME functions" }, StringSplitOptions.None);
-            writer.WriteLine(FirmataPlus[0]);
-            generate_constructor(writer, class_name, channels, home);
-            generate_functions(writer, class_name, channels);
-            generate_setup(writer, channels, home, true, angle, class_name);
-            generate_loop(writer, class_name);
-            string insert = "";
-            for (int i = 0; i < ME_Motionlist.Count; i++)
-            {
-                ME_Motion m = (ME_Motion)ME_Motionlist[i];
-                if (i == 0)
-                    insert += "      if (motion_id == " + i + ") robot." + m.name + "(motion_times);";
-                else
-                    insert += "\n      else if (motion_id == " + i + ") robot." + m.name + "(motion_times);";
-            }
-            FirmataPlus[1] = FirmataPlus[1].Replace("      // call motions here", insert);
-            insert = "";
-            if (channels.Count != 45)
-            {
-                insert += "  for (byte i = 0; i < " + (45 - channels.Count) + "; i++) {\n" +
-                          "    if (!IS_PIN_ANALOG(available_digital_pins[i])) {\n" +
-                          "      // sets the output to 0, configures portConfigInputs\n" +
-                          "      setPinModeCallback(available_digital_pins[i], OUTPUT);\n" +
-                          "    }\n" +
-                          "  }";
-            }
-            writer.WriteLine(FirmataPlus[1].Replace("  // 86ME reset digital pins", insert));
-            writer.Dispose();
-            writer.Close();
+            isFirmata = false;
         }
 
         private void generate_handler(string path, string port)
@@ -2294,7 +2445,7 @@ namespace _86ME_ver2
             // scratch_command_handlers.py
             TextWriter writer = new StreamWriter(path + "\\scratch_command_handlers.py");
             string template = Properties.Resources.scratch_command_handlers;
-            string insert_function = "";
+            string insert_function = "\n";
             string insert_command = "";
             for (int i = 0; i < ME_Motionlist.Count; i++)
             {
@@ -2309,7 +2460,7 @@ namespace _86ME_ver2
                                    "        return \'okay\'\n\n";
                 insert_command += ",\n                    \'perform_" + m.name + "\': perform_" + m.name;
             }
-            template = template.Replace("    # Define functions to perform motions here", insert_function);
+            template = template.Replace("# Define functions to perform motions here", insert_function);
             writer.Write(template.Replace("# insert motion commands here", insert_command));
             writer.Dispose();
             writer.Close();
@@ -2423,20 +2574,81 @@ namespace _86ME_ver2
             writer.Close();
         }
 
-        public void generate_ScratchProject()
+        private void generate_s2a(string path, string project_name)
         {
-            ScratchProperty properties = new ScratchProperty(FSMGen_lang_dic);
+            TextWriter writer = new StreamWriter(path + "\\s2a_fm.py");
+            string template = "";
+            template = Properties.Resources.s2a_fm;
+            writer.WriteLine(template.Replace("Hello, 86Duino", project_name));
+            writer.Dispose();
+            writer.Close();
+
+        }
+        private void generate_icon(string path, string icon_path)
+        {
+            if(icon != null)
+            {
+                try
+                {
+                    icon.Save(path + "\\icon.jpg");//Exception occurs here
+                }
+                catch { }
+            }
+            else if (icon_path != null)
+            {
+                System.IO.File.Copy(icon_path, path + "\\icon" + Path.GetExtension(icon_path), true);
+            }
+            else
+            {
+
+                DialogResult file_exit = MessageBox.Show("You did not set the project icon,\n do you want to choose one?", "projcet icon", MessageBoxButtons.YesNo);
+                if (file_exit == DialogResult.Yes)
+                {
+                    OpenFileDialog ofdPic = new OpenFileDialog();
+                    ofdPic.Filter = "JPG(*.JPG;*.JPEG);gif文件(*.GIF);PNG(*.png)|*.jpg;*.jpeg;*.gif;*.png";
+                    ofdPic.FilterIndex = 1;
+                    ofdPic.RestoreDirectory = true;
+                    ofdPic.FileName = "";
+                    if (ofdPic.ShowDialog() == DialogResult.OK)
+                    {
+                        Motion.picfilename = Path.GetFullPath(ofdPic.FileName);
+                        System.IO.File.Copy(Motion.picfilename, path + "\\icon" + Path.GetExtension(Motion.picfilename), true);
+                    }
+                }
+                else if (file_exit == DialogResult.No)
+                {
+                    return;
+                }                
+            }
+        }
+        private void generate_info(string path, String readme)
+        {
+            if (readme.Length == 0)
+                return;
+            TextWriter writer = new StreamWriter(path + "\\readme.txt", true, Encoding.UTF8);
+
+            writer.WriteLine(readme);
+            writer.Dispose();
+            writer.Close();
+        }
+        public void generate_ScratchProject(bool develop_mode)
+        {
+            ScratchProperty properties = new ScratchProperty(FSMGen_lang_dic, develop_mode);
             var dialogResult = properties.ShowDialog();
             string path = properties.path;
             if (dialogResult == DialogResult.OK)
             {
-                string folderName = "86MEScratchProject";
+                string folderName = properties.project_name;
                 Directory.CreateDirectory(path + "\\" + folderName);
                 generate_FirmataPlus(path + "\\" + folderName, properties);
                 generate_handler(path + "\\" + folderName, properties.port);
-                generate_sb2(path + "\\" + folderName, properties.port);
+                generate_sb2(path + "\\" + folderName, properties.port);                
                 generate_s2e(path + "\\" + folderName, properties.port);
+                generate_s2a(path + "\\" + folderName, properties.project_name);
+                generate_icon(path + "\\" + folderName, Motion.picfilename);
+                generate_info(path + "\\" + folderName, properties.readme);
                 MessageBox.Show("The project is generated in " + path + "\\" + folderName + "\\");
+                
             }
         }
     }

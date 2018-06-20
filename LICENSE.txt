@@ -1,5 +1,5 @@
-This file includes licensing information for parts of 86ME(86Duino 
-Motion Editor).
+This file includes licensing information for parts of 86ME (86Duino 
+Motion Editor) Mk-II.
 
 First, the gnu general public license, which covers the main body 
 of the 86ME code (in general, all the stuff inside the 86ME 

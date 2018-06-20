@@ -33,17 +33,22 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(12, 13);
+            this.progressBar1.Location = new System.Drawing.Point(15, 16);
+            this.progressBar1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(260, 25);
+            this.progressBar1.Size = new System.Drawing.Size(325, 31);
             this.progressBar1.TabIndex = 0;
             // 
             // Progress
             // 
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(284, 51);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.ClientSize = new System.Drawing.Size(355, 64);
             this.ControlBox = false;
             this.Controls.Add(this.progressBar1);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.MaximumSize = new System.Drawing.Size(373, 109);
+            this.MinimumSize = new System.Drawing.Size(373, 109);
             this.Name = "Progress";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
