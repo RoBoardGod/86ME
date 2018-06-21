@@ -1,6 +1,6 @@
 #### CHANGELOG ####
 
-_VERSION_: v2.1
+_VERSION_: v2.1.0
 
 * UI Interface：
     * Add a new icon for 86ME program.
@@ -53,7 +53,7 @@ _VERSION_: v2.1
     * Modify the "Add/Rename button" as pop-up window.
     * Add the "Comments" field.
 
-_VERSION_: v2.0
+_VERSION_: v2.0.0
 
 * Add a new form for editing variables in "Option->Edit Variables"
 * Change the project format to JSON.
