@@ -1,5 +1,22 @@
-#### CHANGELOG ####
+﻿#### CHANGELOG ####
 
+_VERSION_: v2.2.0
+
+* Play Sound：
+    * Now you can add and edit the audio in Edit/Edit Audio List.
+    * If an audio with a longer duration(>23 seconds) is imported, 86ME will open trimming tool automatically.
+    * Add command [PlaySound], you can see it in "Insert a new Instruction for editing" button.
+    * Under [PlaySound], it allows two playing modes: "Background" and "Wait for Complete".
+    * 100% supports for "Code Generation".
+* Others
+    * Fix some bug of Instruction List behavior.
+    * Fix some bug for Simulate Motion.
+    * Simulate Motion now support [PlaySound].
+    * Fix a bug for Code Generation Pins check.
+    * Modify the description of statement and the typesetting of 86ME.
+    * Add RBMadman and the graphic for him into author group.
+    * Fix assembly info.
+	
 _VERSION_: v2.1.0
 
 * UI Interface：
