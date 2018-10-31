@@ -1,5 +1,11 @@
 ﻿#### CHANGELOG ####
 
+_VERSION_: v2.2.1
+
+* Modify the generation code's Audio path to C:\(SD card).
+* Fix some bugs.
+* Optimize system and reduce memory usage.
+
 _VERSION_: v2.2.0
 
 * Play Sound：

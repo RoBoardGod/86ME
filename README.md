@@ -1,4 +1,4 @@
-86ME (86Duino Motion Editor) Mk-II v2.2.0
+86ME (86Duino Motion Editor) Mk-II v2.2.1
 ---------
 The 86ME Mk-II allows that you edit servo action frames to be used by the Servo86 library, and can automatically generate 86Duino sketches to control motion of servos.
 
